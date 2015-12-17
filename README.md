@@ -35,3 +35,10 @@ Would return:
   ]
 }
 ```
+
+### Testing
+
+```bash
+npm install --only=dev
+npm test
+```
