@@ -1,0 +1,15 @@
+{
+  "name": "filters",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "tests/run.js",
+    "test": "tests/run.js"
+  },
+  "author": "Mike Cardwell",
+  "license": "MIT",
+  "devDependencies": {
+    "qunit": "^0.7.7"
+  }
+}
