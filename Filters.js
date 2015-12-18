@@ -197,22 +197,6 @@ module.exports.NotFilter = function(func) {
     var selector = func(value);
 
     /**
-     * Special case for $regex as this is not allowed:
-     *     { $not: { $regex: /wibble/, $options: 'i' } }
-     *
-     * But this equivalent is:
-     *     { $not: /wibble/i }
-     */
-    if (selector.$regex) {
-      if (!(selector.$regex instanceof RegExp)) {
-        selector = new RegExp(selector.$regex, selector.$options);
-      }
-      return {
-        $not: selector
-      };
-    }
-
-    /**
      * Special case for $where as this is not allowed:
      *     { $not: { $where: func } }
      *
@@ -239,14 +223,10 @@ module.exports.NotFilter = function(func) {
       if (v instanceof RegExp) {
         // { $not: RegExp } is fine and dandy. Leave alone
       } else if (v !== null && typeof v === 'object') {
-        // Instead of: { fieldName: { $not: { $regexp: RegExp } } }
+        // Instead of: { fieldName: { $not: { $regex: RegExp } } }
         // Create    : { fieldName: { $not: RegExp } }
         if (v.$regex) {
-          var regex = v.$regex;
-          if (!(regex instanceof RegExp)) {
-            regex = new RegExp(regex, v.$options);
-          }
-          v = regex;
+          v = compactQuery(v);
         }
       } else {
         /**
@@ -364,29 +344,14 @@ module.exports.ModFilter = function(field) {
  */
 module.exports.RegexFilter = function(field, options) {
   return function(value) {
-    if (typeof value === 'number') value = String(value);
-
-    if (typeof value !== 'string' && !(value instanceof RegExp)) {
-      throw 'Invalid value passed to RegexFilter';
-    }
-
-    if (options) {
-      if (typeof value === 'string') {
-        value = new RegExp(value, options);
-      } else {
-        value = {
-          $regexp: value,
-          $options: options
-        };
-      }
-    } else {
-      if (typeof value === 'string') {
-        value = new RegExp(value);
-      }
-    }
-
     var selector = {};
-    selector[field] = value;
+    selector[field] = {
+      $regex: value,
+    };
+    if (options) {
+      selector[field].$options = options;
+    }
+    selector[field] = compactQuery(selector[field]);
     return selector;
   };
 };
@@ -533,6 +498,44 @@ function compactQuery(query) {
   if (query.$or) {
     if (query.$or.length === 1) {
       query = query.$or[0];
+    }
+  }
+
+  if (query.$regex) {
+    if (typeof query.$regex === 'number') {
+      query.$regex = String(query.$regex);
+    }
+    if (typeof query.$regex !== 'string' && !(query.$regex instanceof RegExp)) {
+      throw new Error("Invalid value for $regex");
+    }
+
+    var canCompress = true;
+    Object.keys(query).forEach(function(k){
+      if (k !== '$regex' && k !== '$options') canCompress = false;
+    });
+
+    if (canCompress) {
+      if (query.$options) {
+        if (typeof query.$regex === 'string') {
+          query = new RegExp(query.$regex, query.$options);
+        } else {
+          var rxs = query.$regex.toString();
+          var mat = rxs.match(/^\/([\s\S]*)\/([a-z]*)$/);
+          rxs     = mat[1];
+          options = mat[2] + query.$options;
+          options = Object.keys(
+            options.split('').reduce(function(o, l){
+              o[ l ] = 1;
+              return o
+            },{})
+          ).sort().join('');
+          query = new RegExp(rxs, options);
+        }
+      } else if (typeof query.$regex === 'string'){
+        query = new RegExp(query.$regex);
+      } else {
+        query = query.$regex;
+      }
     }
   }
 

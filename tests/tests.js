@@ -135,6 +135,33 @@ QUnit.test('NotFilter', function() {
       }
     }
   );
+  deepEqual(
+    NotFilter(function() {
+      return {
+        field: {
+          $regex: /x/g
+        }
+      }
+    })(), {
+      field: {
+        $not: /x/g
+      }
+    }
+  );
+  deepEqual(
+    NotFilter(function() {
+      return {
+        field: {
+          $regex: /x/i,
+          $options: 'g'
+        }
+      }
+    })(), {
+      field: {
+        $not: /x/gi
+      }
+    }
+  );
 });
 
 QUnit.test('NorFilter', function() {
@@ -227,10 +254,7 @@ QUnit.test('RegexFilter', function() {
   );
   deepEqual(
     Filters.RegexFilter('field', 'i')(/x/), {
-      field: {
-        $regexp: /x/,
-        $options: 'i'
-      }
+      field: /x/i
     }
   );
   deepEqual(
