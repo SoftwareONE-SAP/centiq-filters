@@ -171,55 +171,67 @@ module.exports.NinFilter = function(field) {
 };
 
 /**
- * OrFilter()([filters])
+ * OrFilter({
+ * 	k1: filter1
+ * 	k2: filter2,
+ * 	k3: filter3(10),
+ * })({ k1: 2, k2: 4 })
  *
- * { $or: [filters] }
+ * { $or: [ filter1(2), filter2(4), filter3(10) ] }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/or/
  */
-module.exports.OrFilter = function() {
-  if (arguments.length) {
-    throw new Error('OrFilter takes zero arguments');
+module.exports.OrFilter = function(filters) {
+  if (arguments.length !== 1 || typeof filters !== 'object') {
+    throw new Error('OrFilter takes a single Object argument');
   }
-  return function(filters) {
-    if (!Array.isArray(filters)) {
+  return function (values) {
+    if (typeof values !== 'object') {
       throw new Error('Invalid value passed to OrFilter');
     }
-
-    filters.forEach(function(f){
-      if (typeof f === 'function')
-        throw new Error('OrFilter contains an unresolved Function');
+    var queries = [];
+    Object.keys(filters).forEach(function(name){
+      var query = filters[ name ];
+      if (typeof query === 'function') {
+        query = query(values[ name ]);
+      }
+      queries.push(query);
     });
-
     return compactQuery({
-      $or: filters,
+      $or: queries,
     });
   };
 };
 
 /**
- * AndFilter()([filters])
+ * AndFilter({
+ * 	k1: filter1
+ * 	k2: filter2,
+ * 	k3: filter3(10),
+ * })({ k1: 2, k2: 4 })
  *
- * { $and: [filters] }
+ * { $and: [ filter1(2), filter2(4), filter3(10) ] }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/and/
  */
-module.exports.AndFilter = function() {
-  if (arguments.length) {
-    throw new Error('AndFilter takes zero arguments');
+module.exports.AndFilter = function(filters) {
+  if (arguments.length !== 1 || typeof filters !== 'object') {
+    throw new Error('AndFilter takes a single Object argument');
   }
-  return function(filters) {
-    if (!Array.isArray(filters)) {
+  return function (values) {
+    if (typeof values !== 'object') {
       throw new Error('Invalid value passed to AndFilter');
     }
-
-    filters.forEach(function(f){
-      if (typeof f === 'function')
-        throw new Error('AndFilter contains an unresolved function');
+    var queries = [];
+    Object.keys(filters).forEach(function(name){
+      var query = filters[ name ];
+      if (typeof query === 'function') {
+        query = query(values[ name ]);
+      }
+      queries.push(query);
     });
-
     return compactQuery({
-      $and: filters,
+      $and: queries,
     });
   };
 };
@@ -290,26 +302,34 @@ module.exports.NotFilter = function(func) {
 };
 
 /**
- * NorFilter()([filters])
+ * NorFilter({
+ * 	k1: filter1
+ * 	k2: filter2,
+ * 	k3: filter3(10),
+ * })({ k1: 2, k2: 4 })
  *
- * { $nor: [filters] }
+ * { $nor: [ filter1(2), filter2(4), filter3(10) ] }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nor/
  */
-module.exports.NorFilter = function() {
-  if (arguments.length) {
-    throw new Error('NorFilter takes zero arguments');
+module.exports.NorFilter = function(filters) {
+  if (arguments.length !== 1 || typeof filters !== 'object') {
+    throw new Error('NorFilter takes a single Object argument');
   }
-  return function(filters) {
-    if (!Array.isArray(filters)) {
+  return function (values) {
+    if (typeof values !== 'object') {
       throw new Error('Invalid value passed to NorFilter');
     }
-    filters.forEach(function(f){
-      if (typeof f === 'function')
-        throw new Error('NorFilter contains an unresolved Function');
+    var queries = [];
+    Object.keys(filters).forEach(function(name){
+      var query = filters[ name ];
+      if (typeof query === 'function') {
+        query = query(values[ name ]);
+      }
+      queries.push(query);
     });
     return compactQuery({
-      $nor: filters,
+      $nor: queries,
     });
   };
 };

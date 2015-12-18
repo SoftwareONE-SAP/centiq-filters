@@ -58,23 +58,23 @@ QUnit.test('EqFilter', function() {
 
 QUnit.test('OrFilter', function() {
   deepEqual(
-    Filters.OrFilter()([{
-      field1: 2
-    }, {
-      field2: 3
-    }]), {
-      $or: [{
-        field1: 2
-      }, {
-        field2: 3
-      }]
+    Filters.OrFilter({
+      f1: EqFilter('field1'),
+      f2: EqFilter('field2'),
+    })({ f1: 2, f2: 3 }),
+    {
+      $or: [
+        { field1: 2 },
+        { field2: 3 }
+      ]
     }
   );
   deepEqual(
-    Filters.OrFilter()([{
-      field1: 2
-    }]), {
-      field1: 2
+    Filters.OrFilter({
+      f1: EqFilter('field1')
+    })({ f1: 2 }),
+    {
+      field1: 2,
     }
   );
   throws(function() {
@@ -84,26 +84,25 @@ QUnit.test('OrFilter', function() {
 
 QUnit.test('AndFilter', function() {
   deepEqual(
-    Filters.AndFilter()([{
-      field1: 2
-    }, {
-      field2: 3
-    }]), {
+    Filters.AndFilter({
+      f1: EqFilter('field1'),
+      f2: EqFilter('field2'),
+    })({ f1: 2, f2: 3 }),
+    {
       field1: 2,
-      field2: 3
+      field2: 3,
     }
   );
   deepEqual(
-    Filters.AndFilter()([{
-      field1: 2
-    }, {
-      field1: 3
-    }]), {
-      $and: [{
-        field1: 2
-      }, {
-        field1: 3
-      }]
+    Filters.AndFilter({
+      f1: EqFilter('field1'),
+      f2: EqFilter('field1'),
+    })({ f1: 2, f2: 3 }),
+    {
+      $and: [
+        { field1: 2 },
+        { field1: 3 },
+      ],
     }
   );
   throws(function() {
@@ -166,11 +165,11 @@ QUnit.test('NotFilter', function() {
 
 QUnit.test('NorFilter', function() {
   deepEqual(
-    Filters.NorFilter()([{
-      field1: 2
-    }, {
-      field2: 3
-    }]), {
+    Filters.NorFilter({
+      f1: EqFilter('field1'),
+      f2: EqFilter('field2'),
+    })({ f1: 2, f2: 3 }),
+    {
       $nor: [{
         field1: 2
       }, {
@@ -212,6 +211,8 @@ QUnit.test('TypeFilter', function() {
     Filters.TypeFilter('field')('wibble');
   });
 });
+
+
 
 QUnit.test('ModFilter', function() {
   deepEqual(
