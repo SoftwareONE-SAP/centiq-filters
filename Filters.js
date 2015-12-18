@@ -6,6 +6,9 @@
  * https://docs.mongodb.org/v3.0/reference/operator/query/eq/
  */
 module.exports.EqFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('EqFilter takes a single String argument');
+  }
   return function(value) {
     if (value !== null && typeof value !== 'string' && typeof value !==
       'number') {
@@ -25,6 +28,9 @@ module.exports.EqFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/gt/
  */
 module.exports.GtFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('GtFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
@@ -48,6 +54,9 @@ module.exports.GtFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/gte/
  */
 module.exports.GteFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('GteFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
@@ -71,6 +80,9 @@ module.exports.GteFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/lt/
  */
 module.exports.LtFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('LtFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
@@ -94,6 +106,9 @@ module.exports.LtFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/lte/
  */
 module.exports.LteFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('LteFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
@@ -117,6 +132,9 @@ module.exports.LteFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/in/
  */
 module.exports.InFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('InFilter takes a single String argument');
+  }
   return function(values) {
     if (!Array.isArray(values)) {
       throw new Error('Invalid value passed to InFilter');
@@ -137,6 +155,9 @@ module.exports.InFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/nin/
  */
 module.exports.NinFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('NinFilter takes a single String argument');
+  }
   return function(values) {
     if (!Array.isArray(values)) {
       throw new Error('Invalid value passed to NinFilter');
@@ -157,10 +178,19 @@ module.exports.NinFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/or/
  */
 module.exports.OrFilter = function() {
+  if (arguments.length) {
+    throw new Error('OrFilter takes zero arguments');
+  }
   return function(filters) {
     if (!Array.isArray(filters)) {
       throw new Error('Invalid value passed to OrFilter');
     }
+
+    filters.forEach(function(f){
+      if (typeof f === 'function')
+        throw new Error('OrFilter contains an unresolved Function');
+    });
+
     return compactQuery({
       $or: filters,
     });
@@ -175,10 +205,19 @@ module.exports.OrFilter = function() {
  * https://docs.mongodb.org/v3.0/reference/operator/query/and/
  */
 module.exports.AndFilter = function() {
+  if (arguments.length) {
+    throw new Error('AndFilter takes zero arguments');
+  }
   return function(filters) {
     if (!Array.isArray(filters)) {
       throw new Error('Invalid value passed to AndFilter');
     }
+
+    filters.forEach(function(f){
+      if (typeof f === 'function')
+        throw new Error('AndFilter contains an unresolved function');
+    });
+
     return compactQuery({
       $and: filters,
     });
@@ -193,6 +232,9 @@ module.exports.AndFilter = function() {
  * https://docs.mongodb.org/v3.0/reference/operator/query/not/
  */
 module.exports.NotFilter = function(func) {
+  if (arguments.length !== 1 || typeof func !== 'function') {
+    throw new Error('EqFilter takes a single Function argument');
+  }
   return function(value) {
     var selector = func(value);
 
@@ -255,10 +297,17 @@ module.exports.NotFilter = function(func) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/nor/
  */
 module.exports.NorFilter = function() {
+  if (arguments.length) {
+    throw new Error('NorFilter takes zero arguments');
+  }
   return function(filters) {
     if (!Array.isArray(filters)) {
       throw new Error('Invalid value passed to NorFilter');
     }
+    filters.forEach(function(f){
+      if (typeof f === 'function')
+        throw new Error('NorFilter contains an unresolved Function');
+    });
     return compactQuery({
       $nor: filters,
     });
@@ -272,6 +321,9 @@ module.exports.NorFilter = function() {
  * https://docs.mongodb.org/v3.0/reference/operator/query/exists/
  */
 module.exports.ExistsFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('ExistsFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value === 'undefined') value = true;
     var selector = {};
@@ -290,6 +342,9 @@ module.exports.ExistsFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/type/
  */
 module.exports.TypeFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('TypeFilter takes a single String argument');
+  }
   return function(value) {
     value = parseInt(value);
     if (isNaN(value)) {
@@ -311,8 +366,11 @@ module.exports.TypeFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/mod/
  */
 module.exports.ModFilter = function(field) {
-  var error = new Error('Invalid value passwd to ModFilter');
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('ModFilter takes a single String argument');
+  }
   return function(value) {
+    var error = new Error('Invalid value passwd to ModFilter');
 
     if (typeof value !== 'object') throw error;
 
@@ -343,6 +401,9 @@ module.exports.ModFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/regex/
  */
 module.exports.RegexFilter = function(field, options) {
+  if (arguments.length < 1 || arguments.length > 2 || typeof field !== 'string' || (typeof options !== 'string' && typeof options !== 'undefined' && options !== null)) {
+    throw new Error('RegexFilter takes one or two String arguments');
+  }
   return function(value) {
     var selector = {};
     selector[field] = {
@@ -364,6 +425,9 @@ module.exports.RegexFilter = function(field, options) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/text/
  */
 module.exports.TextFilter = function(language) {
+  if (arguments.length > 1 || (typeof language !== 'string' && typeof language !== 'undefined' && language !== null)) {
+    throw new Error('TextFilter takes a single optional String argument');
+  }
   return function(value) {
 
     if (typeof value === 'number') {
@@ -392,6 +456,10 @@ module.exports.TextFilter = function(language) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/where/
  */
 module.exports.WhereFilter = function(func) {
+  if (arguments.length !== 1 || (typeof func !== 'string' && typeof func !== 'function')) {
+    throw new Error('WhereFilter takes a single String or Function argument');
+  }
+
   if (typeof func === 'string') {
     func = Function('return ' + func);
   }
@@ -415,6 +483,9 @@ module.exports.WhereFilter = function(func) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/all/
  */
 module.exports.AllFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('AllFilter takes a single String argument');
+  }
   return function(filters) {
     if (!Array.isArray(filters)) {
       throw new Error('Invalid value passed to AllFilter');
@@ -435,6 +506,9 @@ module.exports.AllFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/
  */
 module.exports.ElemMatchFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('ElemMatchFilter takes a single String argument');
+  }
   return function(value) {
     if (typeof value !== 'object') {
       throw new Error('Invalid value passed to ElemMatchFilter');
@@ -455,6 +529,9 @@ module.exports.ElemMatchFilter = function(field) {
  * https://docs.mongodb.org/v3.0/reference/operator/query/size/
  */
 module.exports.SizeFilter = function(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('SizeFilter takes a single String argument');
+  }
   return function(value) {
     value = parseInt(value);
     if (isNaN(value)) {
