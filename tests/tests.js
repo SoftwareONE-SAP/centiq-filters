@@ -99,8 +99,8 @@ QUnit.test('AndFilter', function() {
       f2: EqFilter('field1'),
     })({ f1: 2, f2: 3 }),
     {
+      field1: 2,
       $and: [
-        { field1: 2 },
         { field1: 3 },
       ],
     }
@@ -239,39 +239,37 @@ QUnit.test('ModFilter', function() {
 
 QUnit.test('RegexFilter', function() {
   deepEqual(
-    Filters.RegexFilter('field')(/x/), {
+    Filters.RegexFilter('field', /x/)(), {
       field: /x/,
     }
   );
   deepEqual(
-    Filters.RegexFilter('field')('x'), {
+    Filters.RegexFilter('field', 'x')(), {
       field: /x/
     }
   );
   deepEqual(
-    Filters.RegexFilter('field')(3), {
+    Filters.RegexFilter('field', 3)(), {
       field: /3/
     }
   );
   deepEqual(
-    Filters.RegexFilter('field', 'i')(/x/), {
+    Filters.RegexFilter('field', /x/, 'i')(), {
       field: /x/i
     }
   );
   deepEqual(
-    Filters.RegexFilter('field', 'i')('x'), {
+    Filters.RegexFilter('field', 'x', 'i')(), {
       field: /x/i
     }
   );
   deepEqual(
-    Filters.RegexFilter('field', 'i')(3), {
+    Filters.RegexFilter('field', 3, 'i')(), {
       field: /3/i
     }
   );
   throws(function() {
-    Filters.RegexFilter('field')({
-      bad: 'value'
-    });
+    Filters.RegexFilter('field', { bad: 'value' })();
   });
 });
 

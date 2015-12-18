@@ -197,7 +197,7 @@ module.exports.OrFilter = function(filters) {
       }
       queries.push(query);
     });
-    return compactQuery({
+    return fixupOr({
       $or: queries,
     });
   };
@@ -230,7 +230,7 @@ module.exports.AndFilter = function(filters) {
       }
       queries.push(query);
     });
-    return compactQuery({
+    return fixupAnd({
       $and: queries,
     });
   };
@@ -277,11 +277,7 @@ module.exports.NotFilter = function(func) {
       if (v instanceof RegExp) {
         // { $not: RegExp } is fine and dandy. Leave alone
       } else if (v !== null && typeof v === 'object') {
-        // Instead of: { fieldName: { $not: { $regex: RegExp } } }
-        // Create    : { fieldName: { $not: RegExp } }
-        if (v.$regex) {
-          v = compactQuery(v);
-        }
+        if (v.$regex) v = fixupRegex(v);
       } else {
         /**
          * Not allowed: { field: { $not: 'wibble' } }
@@ -328,9 +324,9 @@ module.exports.NorFilter = function(filters) {
       }
       queries.push(query);
     });
-    return compactQuery({
+    return {
       $nor: queries,
-    });
+    };
   };
 };
 
@@ -420,19 +416,22 @@ module.exports.ModFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/regex/
  */
-module.exports.RegexFilter = function(field, options) {
-  if (arguments.length < 1 || arguments.length > 2 || typeof field !== 'string' || (typeof options !== 'string' && typeof options !== 'undefined' && options !== null)) {
-    throw new Error('RegexFilter takes one or two String arguments');
+module.exports.RegexFilter = function(field, regex, options) {
+  if (typeof field !== 'string'
+    || (typeof regex   !== 'string'    && typeof regex !== 'number' && !(regex instanceof RegExp) )
+    || (typeof options !== 'undefined' && typeof options !== 'string' && options !== null)
+  ) {
+    throw new Error('RegexFilter received invalid args');
   }
+
+  regex = fixupRegex({
+    $regex:   regex,
+    $options: options,
+  });
+
   return function(value) {
     var selector = {};
-    selector[field] = {
-      $regex: value,
-    };
-    if (options) {
-      selector[field].$options = options;
-    }
-    selector[field] = compactQuery(selector[field]);
+    selector[field] = regex;
     return selector;
   };
 };
@@ -565,76 +564,115 @@ module.exports.SizeFilter = function(field) {
   };
 };
 
-function compactQuery(query) {
-  /**
-   * Compresses:
-   * 		{ $and: [ { foo:1 }, { bar:2 } ] } to { foo:1, bar:2 }
-   *
-   * Is intelligent enough to not compress:
-   * 		{ $and: [ { foo:1 }, { foo:2 } ] } to { foo:1, foo:2 }
-   */
-  if (query.$and) {
-    var compact = {};
-    query.$and.forEach(function(item) {
-      if (compact === null) return;
-      Object.keys(item).forEach(function(k) {
-        if (compact === null) return;
-        if (compact.hasOwnProperty(k)) return compact = null;
-        compact[k] = item[k];
-      });
-    });
-    if (compact !== null) {
-      query = compact;
-    }
-  }
+/**
+ * Compresses:
+ *   { $and: [
+ *   	 { field1: 1 },
+ *   	 { field2: 2 },
+ *   	 { field3: 3 },
+ *   	 { field2: 4 },
+ *   ] }
+ *
+ * To:
+ *
+ *   {
+ *     field1: 1,
+ *     field2: 2,
+ *     field3: 3,
+ *     $and: [ { field2: 4 } ],
+ *   }
+ */
+function fixupAnd (query) {
+  if (!query.$and) return query;
 
-  /**
-   * Compresses:
-   * 	{ $or: [ { foo:1 } ] } to { foo: 1 }
-   */
-  if (query.$or) {
-    if (query.$or.length === 1) {
-      query = query.$or[0];
-    }
-  }
+  var $and = [];
 
-  if (query.$regex) {
-    if (typeof query.$regex === 'number') {
-      query.$regex = String(query.$regex);
-    }
-    if (typeof query.$regex !== 'string' && !(query.$regex instanceof RegExp)) {
-      throw new Error("Invalid value for $regex");
-    }
-
-    var canCompress = true;
-    Object.keys(query).forEach(function(k){
-      if (k !== '$regex' && k !== '$options') canCompress = false;
-    });
-
-    if (canCompress) {
-      if (query.$options) {
-        if (typeof query.$regex === 'string') {
-          query = new RegExp(query.$regex, query.$options);
-        } else {
-          var rxs = query.$regex.toString();
-          var mat = rxs.match(/^\/([\s\S]*)\/([a-z]*)$/);
-          rxs     = mat[1];
-          options = mat[2] + query.$options;
-          options = Object.keys(
-            options.split('').reduce(function(o, l){
-              o[ l ] = 1;
-              return o
-            },{})
-          ).sort().join('');
-          query = new RegExp(rxs, options);
-        }
-      } else if (typeof query.$regex === 'string'){
-        query = new RegExp(query.$regex);
+  query.$and.forEach(function(q){
+    Object.keys(q).forEach(function(k){
+      if (query.hasOwnProperty(k)) {
+        $and.push(q);
       } else {
-        query = query.$regex;
+        query[ k ] = q[ k ];
       }
-    }
+    })
+  });
+
+  delete query.$and;
+  if ($and.length) {
+    query.$and = $and;
   }
 
   return query;
-};
+}
+
+/**
+ * Compresses: { $or: [ { field1: 1 } ] } to: { field1: 1 }
+ */
+function fixupOr (query) {
+  if (!query.$or) return query;
+  if (query.$or.length > 1) return query;
+
+  Object.keys(query.$or[0]).forEach(function(k){
+    if (!query.hasOwnProperty(k)) {
+      query[ k ] = query.$or[0][ k ];
+      delete query.$or[0][ k ];
+    }
+  });
+  if (Object.keys(query.$or[0]).length === 0) {
+    delete query.$or;
+  }
+
+  return query;
+}
+
+/**
+ * Compresses:
+ * 	{ $regex: /foo/, $options: 'i' }
+ *
+ * To:
+ *  /foo/i
+ */
+function fixupRegex (query) {
+  if (!query.$regex) return query;
+
+  /**
+   * Don't compress if there is anything else in there. E.g:
+   * { $regex: /^F/, $eq: 'Foo' }
+   */
+  var canCompress = true;
+  Object.keys(query).forEach(function(k){
+    if (k !== '$regex' && k !== '$options') {
+      canCompress = false;
+    }
+  });
+  if (!canCompress) return query;
+
+  var regex   = query.$regex;
+  var options = query.$options;
+
+  if (typeof regex === 'number') {
+    regex = String(regex);
+  }
+
+  if (options) {
+    if (typeof regex === 'string') {
+      return new RegExp(regex, options);
+    } else {
+      var rxs = regex.toString();
+      var mat = rxs.match(/^\/([\s\S]*)\/([a-z]*)$/);
+      rxs     = mat[1];
+      options = mat[2] + options;
+      options = Object.keys(
+        options.split('').reduce(function(o, l){
+          o[ l ] = 1;
+          return o
+        },{})
+      ).sort().join('');
+      return new RegExp(rxs, options);
+    }
+  } else if (typeof regex === 'string'){
+    return new RegExp(regex);
+  } else {
+    return regex;
+  }
+}
