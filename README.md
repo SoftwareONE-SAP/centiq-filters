@@ -11,7 +11,9 @@ We need a way to let a user specify the content of a Mongo query, for filtering 
 }
 ```
 
-This library allows us to specify a "filter specification" containing information on exactly what values an end-user is allowed to supply for a particular filter:
+This library allows us to specify a "filter specification" containing information on exactly what values an end-user is allowed to supply for a particular filter.
+
+## Example Usage
 
 ```javascript
 var Filter = require('./FilterSpec');
@@ -129,6 +131,100 @@ var serialized = filter.save();
 //     before: Date('Sun Dec 22 2015 12:29:19 GMT+0000 (GMT)')
 //   }
 // }
+```
+
+## Filter Class
+
+```javascript
+var Filter = require('./FilterSpec');
+```
+
+The spec passed to the constructor is a series of key/values, where the key is the name for this part of the filter, and the value is a filter function which converts a value into a Mongo query. Instead of the value being a function, it can also be an Object containing a "filter" item. These are equivalent:
+
+```javascript
+var ProductFilter = new Filter({
+  MinPrice: GteFilter('price')
+});
+
+var ProductFilter = new Filter({
+  MinPrice: {
+    filter: GteFilter('price')
+  }
+});
+```
+
+The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. Here we store information about a "template" that we might want to use to let the user select what min-price to filter on:
+
+```javascript
+var ProductFilter = new Filter({
+  MinPrice: {
+    filter: GteFilter('price'),
+    meta: {
+      template: Template.minPriceFilterTemplate
+    }
+  }
+});
+```
+
+This meta data can be extracted from the ProductFilter using either of the following methods:
+
+```javascript
+var minPriceTemplate = ProductFilter.meta('MinPrice').template;
+var minPriceTemplate = ProductFilter.meta().MinPrice.template;
+```
+
+"template" is arbitrary. You can store whatever data you want in there.
+
+Now we have ProductFilter, we want to create an instance of it which we can set values for MinPrice on.
+
+```javascript
+var filter = new ProductFilter({ MinPrice: 3 });
+```
+
+Here we instantiated a filter object with MinPrice set to 3. We could have refrained from passing an Object to not set a value for MinPrice, and then set it later with one of these two calls:
+
+```javascript
+var filter = new ProductFilter();
+filter.set('MinPrice', 3);
+filter.set({ 'MinPrice': 3 });
+```
+
+The second notation is useful when you want to set more than one value at the same time. There is an "unset" function to remove one or more values:
+
+```javascript
+filter.unset('MinPrice');
+filter.unset('Multiple', 'Values');
+filter.unset(['Multiple', 'Values', 'In', 'An', 'Array']);
+```
+
+To clear all values:
+
+```javascript
+filter.clear();
+```
+
+To reset the object data to what it was when it was originally constructed:
+
+```javascript
+filter.reset();
+```
+
+To get the data which has been set on the filter:
+
+```javascript
+filter.set('Foo', 123);
+filter.set('Bar', [1, 2, 3]);
+var result = filter.save();
+result == {
+  Foo: 123,
+  Bar: [1, 2, 3]
+}
+```
+
+To get the mongo query:
+
+```javascript
+var mongoQuery = filter.query();
 ```
 
 ## Filter Factories
