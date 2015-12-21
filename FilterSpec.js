@@ -8,6 +8,18 @@ var util = require('util');
 module.exports = function FilterSpec(spec) {
 
   /**
+   * Convert compact format { foo: function }
+   * to advanced format:    { foo: { filter: function } }
+   */
+  Object.keys(spec).forEach(function(k) {
+    if (typeof spec[k] === 'function') {
+      spec[k] = {
+        filter: spec[k]
+      };
+    }
+  });
+
+  /**
    * Create a filter class from the supplied spec. Instances of
    * this class can then be created and values set on them.
    */
@@ -28,8 +40,8 @@ module.exports = function FilterSpec(spec) {
   filter.meta = function meta(name) {
     if (typeof name === 'undefined') {
       var meta = {};
-      Object.keys(spec).forEach(function(name){
-        meta[ name ] = filter.meta(name);
+      Object.keys(spec).forEach(function(name) {
+        meta[name] = filter.meta(name);
       });
       return meta;
     } else {
