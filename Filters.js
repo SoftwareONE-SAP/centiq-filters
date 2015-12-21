@@ -5,7 +5,7 @@
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/eq/
  */
-module.exports.EqFilter = function(field) {
+module.exports.EqFilter = function EqFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('EqFilter takes a single String argument');
   }
@@ -27,7 +27,7 @@ module.exports.EqFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gt/
  */
-module.exports.GtFilter = function(field) {
+module.exports.GtFilter = function GtFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('GtFilter takes a single String argument');
   }
@@ -53,7 +53,7 @@ module.exports.GtFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gte/
  */
-module.exports.GteFilter = function(field) {
+module.exports.GteFilter = function GteFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('GteFilter takes a single String argument');
   }
@@ -79,7 +79,7 @@ module.exports.GteFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lt/
  */
-module.exports.LtFilter = function(field) {
+module.exports.LtFilter = function LtFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('LtFilter takes a single String argument');
   }
@@ -105,7 +105,7 @@ module.exports.LtFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lte/
  */
-module.exports.LteFilter = function(field) {
+module.exports.LteFilter = function LteFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('LteFilter takes a single String argument');
   }
@@ -131,7 +131,7 @@ module.exports.LteFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/in/
  */
-module.exports.InFilter = function(field) {
+module.exports.InFilter = function InFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('InFilter takes a single String argument');
   }
@@ -154,7 +154,7 @@ module.exports.InFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nin/
  */
-module.exports.NinFilter = function(field) {
+module.exports.NinFilter = function NinFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('NinFilter takes a single String argument');
   }
@@ -181,7 +181,7 @@ module.exports.NinFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/or/
  */
-module.exports.OrFilter = function(filters) {
+module.exports.OrFilter = function OrFilter(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('OrFilter takes a single Object argument');
   }
@@ -221,7 +221,7 @@ module.exports.OrFilter = function(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/and/
  */
-module.exports.AndFilter = function(filters) {
+module.exports.AndFilter = function AndFilter(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('AndFilter takes a single Object argument');
   }
@@ -257,7 +257,7 @@ module.exports.AndFilter = function(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/not/
  */
-module.exports.NotFilter = function(func) {
+module.exports.NotFilter = function NotFilter(func) {
   if (arguments.length !== 1 || typeof func !== 'function') {
     throw new Error('EqFilter takes a single Function argument');
   }
@@ -322,7 +322,7 @@ module.exports.NotFilter = function(func) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nor/
  */
-module.exports.NorFilter = function(filters) {
+module.exports.NorFilter = function NorFilter(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('NorFilter takes a single Object argument');
   }
@@ -357,7 +357,7 @@ module.exports.NorFilter = function(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/exists/
  */
-module.exports.ExistsFilter = function(field) {
+module.exports.ExistsFilter = function ExistsFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('ExistsFilter takes a single String argument');
   }
@@ -378,7 +378,7 @@ module.exports.ExistsFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/type/
  */
-module.exports.TypeFilter = function(field) {
+module.exports.TypeFilter = function TypeFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('TypeFilter takes a single String argument');
   }
@@ -402,7 +402,7 @@ module.exports.TypeFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/mod/
  */
-module.exports.ModFilter = function(field) {
+module.exports.ModFilter = function ModFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('ModFilter takes a single String argument');
   }
@@ -437,7 +437,7 @@ module.exports.ModFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/regex/
  */
-module.exports.RegexFilter = function(field, regex, options) {
+module.exports.RegexFilter = function RegexFilter(field, regex, options) {
   if (typeof field !== 'string'
     || (typeof regex   !== 'string'    && typeof regex !== 'number' && !(regex instanceof RegExp) )
     || (typeof options !== 'undefined' && typeof options !== 'string' && options !== null)
@@ -464,7 +464,7 @@ module.exports.RegexFilter = function(field, regex, options) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/text/
  */
-module.exports.TextFilter = function(language) {
+module.exports.TextFilter = function TextFilter(language) {
   if (arguments.length > 1 || (typeof language !== 'string' && typeof language !== 'undefined' && language !== null)) {
     throw new Error('TextFilter takes a single optional String argument');
   }
@@ -495,7 +495,7 @@ module.exports.TextFilter = function(language) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/where/
  */
-module.exports.WhereFilter = function(func) {
+module.exports.WhereFilter = function WhereFilter(func) {
   if (arguments.length !== 1 || (typeof func !== 'string' && typeof func !== 'function')) {
     throw new Error('WhereFilter takes a single String or Function argument');
   }
@@ -522,7 +522,7 @@ module.exports.WhereFilter = function(func) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/all/
  */
-module.exports.AllFilter = function(field) {
+module.exports.AllFilter = function AllFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('AllFilter takes a single String argument');
   }
@@ -545,7 +545,7 @@ module.exports.AllFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/
  */
-module.exports.ElemMatchFilter = function(field) {
+module.exports.ElemMatchFilter = function ElemMatchFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('ElemMatchFilter takes a single String argument');
   }
@@ -568,7 +568,7 @@ module.exports.ElemMatchFilter = function(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/size/
  */
-module.exports.SizeFilter = function(field) {
+module.exports.SizeFilter = function SizeFilter(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('SizeFilter takes a single String argument');
   }
