@@ -1,6 +1,6 @@
-var EJSON        = require('ejson');
+var EJSON = require('ejson');
 var EventEmitter = require('events').EventEmitter;
-var util         = require('util');
+var util = require('util');
 
 /**
  * Create a new FilterSpec class given a Filter specification
@@ -25,10 +25,15 @@ module.exports = function FilterSpec(spec) {
    * this class can then be created and values set on them.
    */
   var filter = function Filter(set) {
-    this._data  = {};
+    this._data = {};
     this._reset = {};
     if (set) {
-      this._reset = EJSON.clone(set);
+      Object.keys(set).forEach(function(k){
+        this._reset[k] = {
+          enabled: true,
+          value: EJSON.clone(set[k])
+        };
+      }.bind(this));
       this.set(set);
     }
     EventEmitter.call(this);
@@ -54,9 +59,9 @@ module.exports = function FilterSpec(spec) {
     }
   };
 
-  filter.prototype.reset = function () {
+  filter.prototype.reset = function() {
     var changed = !EJSON.equals(this._data, this._reset);
-    this._data = this._reset;
+    this._data = EJSON.clone(this._reset);
     if (changed) this.emit('change');
   };
 
@@ -67,12 +72,12 @@ module.exports = function FilterSpec(spec) {
   filter.prototype.unset = function unset() {
     var changed = false;
 
-    Array.prototype.slice.call(arguments).forEach(function(arg){
-      if (!Array.isArray(arg)) arg = [ arg ];
-      arg.forEach(function(k){
+    Array.prototype.slice.call(arguments).forEach(function(arg) {
+      if (!Array.isArray(arg)) arg = [arg];
+      arg.forEach(function(k) {
         if (this._data.hasOwnProperty(k)) {
           changed = true;
-          delete this._data[ k ];
+          delete this._data[k];
         }
       }.bind(this));
     }.bind(this));
@@ -115,23 +120,71 @@ module.exports = function FilterSpec(spec) {
         throw new Error(`There is no filter spec for ${key}`);
       }
 
-      if (!EJSON.equals(this._data[key], value)) {
+      if (this._data.hasOwnProperty(key)) {
+        if (!EJSON.equals(this._data[key].value, value)) {
+          changed = true;
+        }
+      } else {
         changed = true;
-        this._data[key] = EJSON.clone(value);
+        this._data[key] = {
+          enabled: true
+        };
       }
+
+      this._data[key].value = EJSON.clone(value);
 
       /**
        * Although we don't need to call the filter function here,
        * we will do so in case the data passed was invalid,
        * triggering a throw now, rather than at query build time.
        */
-      spec[key].filter(this._data[key]);
+      spec[key].filter(this._data[key].value);
     }.bind(this));
 
     if (changed) this.emit('change');
 
     return this;
   };
+
+  /**
+   * Enable a disabled filter value
+   */
+  filter.prototype.enable = function enable() {
+    var changed = false;
+
+    Array.prototype.slice.call(arguments).forEach(function(arg) {
+      if (!Array.isArray(arg)) arg = [arg];
+      arg.forEach(function(k) {
+        if (!this._data.hasOwnProperty(k)) return;
+        if (this._data[k].enabled) return;
+        this._data[k].enabled = true;
+        changed = true;
+      }.bind(this));
+    }.bind(this));
+
+    if (changed) this.emit('change');
+    return this;
+  };
+
+  /**
+   * Disable an enabled filter value
+   */
+   filter.prototype.disable = function disable() {
+     var changed = false;
+
+     Array.prototype.slice.call(arguments).forEach(function(arg) {
+       if (!Array.isArray(arg)) arg = [arg];
+       arg.forEach(function(k) {
+         if (!this._data.hasOwnProperty(k)) return;
+         if (!this._data[k].enabled) return;
+         this._data[k].enabled = false;
+         changed = true;
+       }.bind(this));
+     }.bind(this));
+
+     if (changed) this.emit('change');
+     return this;
+   };
 
   /**
    * Returns a representation of this filters set values which can
@@ -141,7 +194,13 @@ module.exports = function FilterSpec(spec) {
    * @return {Object} All of the filters currently set keys/values
    */
   filter.prototype.save = function save() {
-    return EJSON.clone(this._data);
+    var save = {};
+    Object.keys(this._data).forEach(function(k) {
+      if (this._data[k].enabled) {
+        save[k] = EJSON.clone(this._data[k].value);
+      }
+    }.bind(this));
+    return save;
   };
 
   /**
@@ -158,8 +217,10 @@ module.exports = function FilterSpec(spec) {
 
     Object.keys(spec).forEach(function(key) {
       if (!this._data.hasOwnProperty(key)) return;
-      var query = spec[key].filter(this._data[key]);
-      queries.push(query);
+      if (this._data[key].enabled) {
+        var query = spec[key].filter(this._data[key].value);
+        queries.push(query);
+      }
     }.bind(this));
 
     var compact = {};

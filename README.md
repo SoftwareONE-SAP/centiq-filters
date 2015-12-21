@@ -209,6 +209,17 @@ To reset the object data to what it was when it was originally constructed:
 filter.reset();
 ```
 
+You can also disable a filter value rather than removing it. Then if you re-enable it, it will contain the previous value that it had. Note, disabled values don't appear when calling "save" or "query".
+
+```javascript
+filter.disable('MinPrice');
+filter.disable('Multiple', 'Values');
+filter.disable(['Multiple', 'Values', 'In', 'An', 'Array']);
+filter.enable('MinPrice');
+filter.enable('Multiple', 'Values');
+filter.enable(['Multiple', 'Values', 'In', 'An', 'Array']);
+```
+
 To get the data which has been set on the filter:
 
 ```javascript
