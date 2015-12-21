@@ -13,6 +13,7 @@
     "qunit": "^0.7.7"
   },
   "dependencies": {
+    "ejson": "^2.1.2",
     "events": "^1.1.0",
     "util": "^0.10.3"
   }

@@ -1,5 +1,6 @@
+var EJSON        = require('ejson');
 var EventEmitter = require('events').EventEmitter;
-var util = require('util');
+var util         = require('util');
 
 /**
  * Create a new FilterSpec class given a Filter specification
@@ -24,8 +25,12 @@ module.exports = function FilterSpec(spec) {
    * this class can then be created and values set on them.
    */
   var filter = function Filter(set) {
-    this._data = {};
-    if (set) this.set(set);
+    this._data  = {};
+    this._reset = {};
+    if (set) {
+      this._reset = EJSON.clone(set);
+      this.set(set);
+    }
     EventEmitter.call(this);
   };
   util.inherits(filter, EventEmitter);
@@ -47,6 +52,12 @@ module.exports = function FilterSpec(spec) {
     } else {
       return spec[name].meta || {};
     }
+  };
+
+  filter.prototype.reset = function () {
+    var changed = !EJSON.equals(this._data, this._reset);
+    this._data = this._reset;
+    if (changed) this.emit('change');
   };
 
   /**
@@ -104,17 +115,17 @@ module.exports = function FilterSpec(spec) {
         throw new Error(`There is no filter spec for ${key}`);
       }
 
-      if (this._data[key] !== value) {
+      if (!EJSON.equals(this._data[key], value)) {
         changed = true;
+        this._data[key] = EJSON.clone(value);
       }
-      this._data[key] = value;
 
       /**
        * Although we don't need to call the filter function here,
        * we will do so in case the data passed was invalid,
        * triggering a throw now, rather than at query build time.
        */
-      spec[key].filter(items[key]);
+      spec[key].filter(this._data[key]);
     }.bind(this));
 
     if (changed) this.emit('change');
@@ -130,7 +141,7 @@ module.exports = function FilterSpec(spec) {
    * @return {Object} All of the filters currently set keys/values
    */
   filter.prototype.save = function save() {
-    return this._data;
+    return EJSON.clone(this._data);
   };
 
   /**
