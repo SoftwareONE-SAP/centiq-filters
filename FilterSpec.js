@@ -53,9 +53,19 @@ module.exports = function FilterSpec(spec) {
    * Remove a filter value
    * @param {String} k The key of the filter value to remove
    */
-  filter.prototype.unset = function unset(k) {
-    var changed = this._data.hasOwnProperty(k);
-    delete this._data[k];
+  filter.prototype.unset = function unset() {
+    var changed = false;
+
+    Array.prototype.slice.call(arguments).forEach(function(arg){
+      if (!Array.isArray(arg)) arg = [ arg ];
+      arg.forEach(function(k){
+        if (this._data.hasOwnProperty(k)) {
+          changed = true;
+          delete this._data[ k ];
+        }
+      }.bind(this));
+    }.bind(this));
+
     if (changed) this.emit('change');
     return this;
   };
