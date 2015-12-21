@@ -145,7 +145,9 @@ A direct "equals" comparison. [$eq](https://docs.mongodb.org/v3.0/reference/oper
 ```javascript
 var filter = EqFilter('price');
 var result = filter(3);
-result == { 'price': 3 };
+result == {
+  'price': 3
+};
 ```
 
 #### GtFilter
@@ -161,7 +163,11 @@ A "greater than" comparison.
 ```javascript
 var filter = GtFilter('price');
 var result = filter(3);
-result == { 'price': { $gt: 3 } };
+result == {
+  'price': {
+    $gt: 3
+  }
+};
 ```
 
 #### GteFilter
@@ -177,7 +183,11 @@ A "greater than or equal to" comparison.
 ```javascript
 var filter = GteFilter('price');
 var result = filter(3);
-result == { 'price': { $gte: 3 } };
+result == {
+  'price': {
+    $gte: 3
+  }
+};
 ```
 
 #### LtFilter
@@ -193,7 +203,11 @@ A "less than" comparison.
 ```javascript
 var filter = LtFilter('price');
 var result = filter(3);
-result == { 'price': { $lt: 3 } };
+result == {
+  'price': {
+    $lt: 3
+  }
+};
 ```
 
 #### LtFilter
@@ -209,7 +223,11 @@ A "less than or equal to" comparison.
 ```javascript
 var filter = LteFilter('price');
 var result = filter(3);
-result == { 'price': { $lte: 3 } };
+result == {
+  'price': {
+    $lte: 3
+  }
+};
 ```
 
 #### InFilter
@@ -225,7 +243,11 @@ A "must be one of" comparison.
 ```javascript
 var filter = InFilter('price');
 var result = filter([2, 3, 4]);
-result == { 'price': { $in: [2, 3, 4] } };
+result == {
+  'price': {
+    $in: [2, 3, 4]
+  }
+};
 ```
 
 #### NinFilter
@@ -241,7 +263,11 @@ A "must not be one of" comparison.
 ```javascript
 var filter = InFilter('price');
 var result = filter([2, 3, 4]);
-result == { 'price': { $nin: [2, 3, 4] } };
+result == {
+  'price': {
+    $nin: [2, 3, 4]
+  }
+};
 ```
 
 #### OrFilter
@@ -336,6 +362,270 @@ var result = filter({
     above: 20
   }
 });
+```
+
+#### AndFilter
+
+A Boolean AND filter.
+[$and](https://docs.mongodb.org/v3.0/reference/operator/query/and/)
+
+|               | Type                | Description |
+|---------------|---------------------|-------------|
+| Factory  arg1 | `String`            | Field name  |
+| Function arg1 | `Array` OR `Object` | Value       |
+
+See [OrFilter](#orfilter). It works exactly the same except uses $and instead of $or
+
+#### NotFilter
+
+A "must not be" comparison.
+[$not](https://docs.mongodb.org/v3.0/reference/operator/query/not/)
+
+|               | Type      | Description |
+|---------------|-----------|-------------|
+| Factory  arg1 | `String`  | Field name  |
+| Function arg1 | anything  | Value       |
+
+```javascript
+var filter = NotFilter(EqFilter('price'));
+var result = filter(5);
+result == {
+  'price': {
+    $not: {
+      $eq: 5
+    }
+  }
+};
+```
+
+The filter function provided by the NotFilter factory function, passes the value supplied to its child.
+
+The Mongo $not filter is strange in that it is incompatible with certain queries. The NotFilter factory function tries to restructure things to make them work. For example, the following 3 are invalid:
+
+```javascript
+1. { price: { $not: 3 } }
+2. { name:  { $not: { $regexp: /^A/, $options: 'i' } } }
+3. { $where: { $not: someFunction } }
+```
+
+So they are converted to these valid versions:
+
+```javascript
+1. { price: { $not: { $eq: 3 } } }
+2. { name:  { $not: /^A/i } }
+3. { $where: function() { return !someFunction.apply(null, arguments) } }
+```
+
+#### NorFilter
+
+A Boolean NOT OR filter.
+[$nor](https://docs.mongodb.org/v3.0/reference/operator/query/nor/)
+
+|               | Type                | Description |
+|---------------|---------------------|-------------|
+| Factory  arg1 | `String`            | Field name  |
+| Function arg1 | `Array` OR `Object` | Value       |
+
+See [NorFilter](#orfilter). It works exactly the same except uses $nor instead of $or
+
+#### ExistsFilter
+
+A "exists" comparison.
+[$exists](https://docs.mongodb.org/v3.0/reference/operator/query/exists/)
+
+|               | Type      | Description                |
+|---------------|-----------|----------------------------|
+| Factory  arg1 | `String`  | Field name                 |
+| Function arg1 | `Boolean` | Optional. Defaults to true |
+
+```javascript
+var filter = ExistsFilter('price');
+var result = filter(false);
+result == {
+  'price': {
+    $exists: false
+  }
+};
+```
+
+#### TypeFilter
+
+A "must be of this type" comparison.
+[$type](https://docs.mongodb.org/v3.0/reference/operator/query/type/)
+
+|              | Type     | Description      |
+|--------------|----------|------------------|
+| Factory arg1 | `String` | Field name       |
+| Factory arg2 | `Number` | Field value type |
+
+```javascript
+var filter = TypeFilter('date', 9);
+var result = filter();
+result == {
+  'date': {
+    $type: 9
+  }
+};
+```
+
+#### ModFilter
+
+A "given this divisor, must match this remainder" comparison.
+[$mod](https://docs.mongodb.org/v3.0/reference/operator/query/mod/)
+
+|               | Type     | Description                    |
+|---------------|----------|--------------------------------|
+| Factory  arg1 | `String` | Field name                     |
+| Function arg1 | `Object` | Contains divisor and remainder |
+
+```javascript
+var filter = ModFilter('price');
+var result = filter({ divisor: 2, remainder: 1 });
+result == {
+  'price': {
+    $mod: [ 2, 1 ]
+  }
+};
+```
+
+The above would pick out all documents where the "price" value is an odd number (1, 3, 5 etc).
+
+#### RegexFilter
+
+A "must match this regular expression" comparison.
+[$regex](https://docs.mongodb.org/v3.0/reference/operator/query/regex/)
+
+|              | Type                 | Description                    |
+|--------------|----------------------|--------------------------------|
+| Factory arg1 | `String`             | Field name                     |
+| Factory arg2 | `String` or `RegExp` | Regular expression             |
+| Factory arg3 | `String`             | Optional regex specifiers      |
+
+```javascript
+var filter = RegexFilter('name', '^A', 'i'); // or:
+var filter = RegexFilter('name', /^A/, 'i'); // or:
+var filter = RegexFilter('name', /^A/i);
+
+var result = filter();
+result == {
+  'name': {
+    $regex: /^A/i
+  }
+};
+```
+
+#### TextFilter
+
+A "must match this text" comparison.
+[$text](https://docs.mongodb.org/v3.0/reference/operator/query/text/)
+
+|               | Type     | Description          |
+|---------------|----------|----------------------|
+| Factory  arg1 | `String` | Language (optional)  |
+| Function arg1 | `String` | String to search for |
+
+```javascript
+var filter = TextFilter('en');
+var result = filter('Mike Cardwell');
+result == {
+  $text: {
+    $search:   'Mike Cardwell',
+    $language: 'en'
+  }
+};
+```
+
+Unlike the other filter factories we've looked at up until this point, we don't specify a field name. That is because Mongo searches any field with a text index in the collection.
+
+#### WhereFilter
+
+A "function run on document must return true" comparison.
+[$where](https://docs.mongodb.org/v3.0/reference/operator/query/where/)
+
+|               | Type                   | Description                  |
+|---------------|------------------------|------------------------------|
+| Factory  arg1 | `Function` or `String` | Function to run on documents |
+| Function args | anything               | All args passed to function supplied in Factory arg1  |
+
+```javascript
+var filter = WhereFilter(function(field, min){
+  return this[ field ] >= min;
+});
+var result = filter('price', 3);
+result == {
+  $where: function () {
+    return this.price >= 3;
+  }
+};
+```
+
+#### AllFilter
+
+A "all values must be contained in doc" comparison.
+[$all](https://docs.mongodb.org/v3.0/reference/operator/query/all/)
+
+|               | Type                   | Description |
+|---------------|------------------------|-------------|
+| Factory  arg1 | `String`               | Field name  |
+| Function arg1 | `Array`                | Values      |
+
+```javascript
+var filter = AllFilter('names');
+var result = filter(['Mike', 'Cardwell']);
+result == {
+  names: {
+    $all: [
+      'Mike',
+      'Cardwell'
+    ]
+  }
+};
+```
+
+#### ElemMatchFilter
+
+A "at least one element query must match doc" comparison.
+[$elemMatch](https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/)
+
+|               | Type     | Description |
+|---------------|----------|-------------|
+| Factory  arg1 | `String` | Field name  |
+| Function arg1 | `Object` | Queries     |
+
+```javascript
+var filter = ElemMatchFilter('price');
+var result = filter({
+  $lt: 5,
+  $gt: 10
+});
+result == {
+  price: {
+    $elemMatch: {
+      $lt: 5,
+      $gt: 10
+    }
+  }
+};
+```
+
+#### SizeFilter
+
+A "array must have this many items" comparison.
+[$size](https://docs.mongodb.org/v3.0/reference/operator/query/size/)
+
+|               | Type     | Description     |
+|---------------|----------|-----------------|
+| Factory  arg1 | `String` | Field name      |
+| Function arg1 | `Number` | Number of items |
+
+```javascript
+var filter = SizeFilter('names');
+var result = filter(2);
+result == {
+  names: {
+    $size: 2
+  }
+};
 ```
 
 ### Testing
