@@ -244,7 +244,7 @@ QUnit.test('ExistsFilter', function() {
 
 QUnit.test('TypeFilter', function() {
   deepEqual(
-    Filters.TypeFilter('field')(3), {
+    Filters.TypeFilter('field', 3)(), {
       field: {
         $type: 3
       }

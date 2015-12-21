@@ -372,21 +372,17 @@ module.exports.ExistsFilter = function ExistsFilterFactory(field) {
 };
 
 /**
- * TypeFilter(field)(value)
+ * TypeFilter(field, value)()
  *
  * { field: { $type: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/type/
  */
-module.exports.TypeFilter = function TypeFilterFactory(field) {
-  if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('TypeFilter takes a single String argument');
+module.exports.TypeFilter = function TypeFilterFactory(field, value) {
+  if (arguments.length !== 2 || typeof field !== 'string' || typeof value !== 'number' || isNaN(value)) {
+    throw new Error('TypeFilter takes a String argument followed by a number');
   }
-  return function TypeFilter(value) {
-    value = parseInt(value);
-    if (isNaN(value)) {
-      throw new Error('Invalid value passed to TypeFilter');
-    }
+  return function TypeFilter() {
     var selector = {};
     selector[field] = {
       $type: value
