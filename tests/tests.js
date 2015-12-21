@@ -58,22 +58,38 @@ QUnit.test('EqFilter', function() {
 
 QUnit.test('OrFilter', function() {
   deepEqual(
+    Filters.OrFilter([
+      EqFilter('field1')(2),
+      EqFilter('field2')(3),
+    ])(), {
+      $or: [{
+        field1: 2,
+      }, {
+        field2: 3
+      }]
+    }
+  );
+  deepEqual(
     Filters.OrFilter({
       f1: EqFilter('field1'),
       f2: EqFilter('field2'),
-    })({ f1: 2, f2: 3 }),
-    {
-      $or: [
-        { field1: 2 },
-        { field2: 3 }
-      ]
+    })({
+      f1: 2,
+      f2: 3
+    }), {
+      $or: [{
+        field1: 2
+      }, {
+        field2: 3
+      }]
     }
   );
   deepEqual(
     Filters.OrFilter({
       f1: EqFilter('field1')
-    })({ f1: 2 }),
-    {
+    })({
+      f1: 2
+    }), {
       field1: 2,
     }
   );
@@ -84,11 +100,22 @@ QUnit.test('OrFilter', function() {
 
 QUnit.test('AndFilter', function() {
   deepEqual(
+    Filters.AndFilter([
+      EqFilter('field1')(2),
+      EqFilter('field2')(3),
+    ])(), {
+      field1: 2,
+      field2: 3
+    }
+  );
+  deepEqual(
     Filters.AndFilter({
       f1: EqFilter('field1'),
       f2: EqFilter('field2'),
-    })({ f1: 2, f2: 3 }),
-    {
+    })({
+      f1: 2,
+      f2: 3
+    }), {
       field1: 2,
       field2: 3,
     }
@@ -97,12 +124,14 @@ QUnit.test('AndFilter', function() {
     Filters.AndFilter({
       f1: EqFilter('field1'),
       f2: EqFilter('field1'),
-    })({ f1: 2, f2: 3 }),
-    {
+    })({
+      f1: 2,
+      f2: 3
+    }), {
       field1: 2,
-      $and: [
-        { field1: 3 },
-      ],
+      $and: [{
+        field1: 3
+      }, ],
     }
   );
   throws(function() {
@@ -165,11 +194,25 @@ QUnit.test('NotFilter', function() {
 
 QUnit.test('NorFilter', function() {
   deepEqual(
+    Filters.NorFilter([
+      EqFilter('field1')(2),
+      EqFilter('field2')(3),
+    ])(), {
+      $nor: [{
+        field1: 2,
+      }, {
+        field2: 3
+      }]
+    }
+  );
+  deepEqual(
     Filters.NorFilter({
       f1: EqFilter('field1'),
       f2: EqFilter('field2'),
-    })({ f1: 2, f2: 3 }),
-    {
+    })({
+      f1: 2,
+      f2: 3
+    }), {
       $nor: [{
         field1: 2
       }, {
@@ -269,7 +312,9 @@ QUnit.test('RegexFilter', function() {
     }
   );
   throws(function() {
-    Filters.RegexFilter('field', { bad: 'value' })();
+    Filters.RegexFilter('field', {
+      bad: 'value'
+    })();
   });
 });
 

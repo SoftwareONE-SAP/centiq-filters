@@ -186,17 +186,24 @@ module.exports.OrFilter = function(filters) {
     throw new Error('OrFilter takes a single Object argument');
   }
   return function (values) {
+    if (typeof values === 'undefined') {
+      values = {};
+    }
     if (typeof values !== 'object') {
       throw new Error('Invalid value passed to OrFilter');
     }
     var queries = [];
-    Object.keys(filters).forEach(function(name){
-      var query = filters[ name ];
-      if (typeof query === 'function') {
-        query = query(values[ name ]);
-      }
-      queries.push(query);
-    });
+    if (Array.isArray(filters)) {
+      queries = filters;
+    } else {
+      Object.keys(filters).forEach(function(name){
+        var query = filters[ name ];
+        if (typeof query === 'function') {
+          query = query(values[ name ]);
+        }
+        queries.push(query);
+      });
+    }
     return fixupOr({
       $or: queries,
     });
@@ -219,17 +226,24 @@ module.exports.AndFilter = function(filters) {
     throw new Error('AndFilter takes a single Object argument');
   }
   return function (values) {
+    if (typeof values === 'undefined') {
+      values = {};
+    }
     if (typeof values !== 'object') {
       throw new Error('Invalid value passed to AndFilter');
     }
     var queries = [];
-    Object.keys(filters).forEach(function(name){
-      var query = filters[ name ];
-      if (typeof query === 'function') {
-        query = query(values[ name ]);
-      }
-      queries.push(query);
-    });
+    if (Array.isArray(filters)) {
+      queries = filters;
+    } else {
+      Object.keys(filters).forEach(function(name){
+        var query = filters[ name ];
+        if (typeof query === 'function') {
+          query = query(values[ name ]);
+        }
+        queries.push(query);
+      });
+    }
     return fixupAnd({
       $and: queries,
     });
@@ -313,17 +327,24 @@ module.exports.NorFilter = function(filters) {
     throw new Error('NorFilter takes a single Object argument');
   }
   return function (values) {
+    if (typeof values === 'undefined') {
+      values = {};
+    }
     if (typeof values !== 'object') {
       throw new Error('Invalid value passed to NorFilter');
     }
     var queries = [];
-    Object.keys(filters).forEach(function(name){
-      var query = filters[ name ];
-      if (typeof query === 'function') {
-        query = query(values[ name ]);
-      }
-      queries.push(query);
-    });
+    if (Array.isArray(filters)) {
+      queries = filters;
+    } else {
+      Object.keys(filters).forEach(function(name){
+        var query = filters[ name ];
+        if (typeof query === 'function') {
+          query = query(values[ name ]);
+        }
+        queries.push(query);
+      });
+    }
     return {
       $nor: queries,
     };

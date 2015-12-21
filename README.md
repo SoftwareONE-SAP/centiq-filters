@@ -42,6 +42,18 @@ var result = filter({
 }
 ```
 
+An equivalent alternative to the above where the filter and values are combined;
+
+```javascript
+var result = OrFilter([
+  EqFilter('name')('Foobar'),
+  AndFilter([
+    GtFilter('price')(12),
+    LtFilter('price')(20)
+  ])
+]);
+```
+
 ### Testing
 
 ```bash
