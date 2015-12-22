@@ -96,6 +96,7 @@ var DateBetweenFilter = function DateBetweenFilterFactory(field) {
       $gt: value.after,
       $lt: value.before
     };
+
     return query;
   };
 };
@@ -401,7 +402,7 @@ result == {
 };
 ```
 
-In the above example, we are hard coding the two values inside the factory function. This is not ideal. You can alternatively use Object notiation instead of Array notation in order to pass values through from the filter function. The following would product the exact same result as above:
+In the above example, we are hard coding the two values inside the factory function. This is not ideal. You can alternatively use Object notiation instead of Array notation in order to pass values through from the filter function. The following would produce the exact same result as above:
 
 ```javascript
 var filter = OrFilter({
@@ -520,7 +521,7 @@ So they are converted to these valid versions:
 ```javascript
 1. { price: { $not: { $eq: 3 } } }
 2. { name:  { $not: /^A/i } }
-3. { $where: function() { return !someFunction.apply(null, arguments) } }
+3. { $where: function() { return !(someFunction.apply(this, arguments)) } }
 ```
 
 #### NorFilter
@@ -533,7 +534,7 @@ A Boolean NOT OR filter.
 | Factory  arg1 | `String`            | Field name  |
 | Function arg1 | `Array` OR `Object` | Value       |
 
-See [NorFilter](#orfilter). It works exactly the same except uses $nor instead of $or
+See [OrFilter](#orfilter). It works exactly the same except uses $nor instead of $or
 
 #### ExistsFilter
 
@@ -547,10 +548,18 @@ A "exists" comparison.
 
 ```javascript
 var filter = ExistsFilter('price');
+
 var result = filter(false);
 result == {
   'price': {
     $exists: false
+  }
+};
+
+result = filter();
+result == {
+  'price': {
+    $exists: true
   }
 };
 ```
@@ -736,6 +745,8 @@ result == {
 ```
 
 ### Testing
+
+There are a tests for the filter factory functions. You can run them by doing this:
 
 ```bash
 npm install --only=dev
