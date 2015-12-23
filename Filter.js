@@ -1,12 +1,8 @@
-var EJSON = require('ejson');
-var EventEmitter = require('events').EventEmitter;
-var util = require('util');
-
 /**
- * Create a new FilterSpec class given a Filter specification
+ * Create a new Filter class given a Filter specification
  * @param {Object} spec A description of a set of filters
  */
-module.exports = function FilterSpec(spec) {
+Filter = function Filter(spec) {
 
   /**
    * Convert compact format { foo: function }
@@ -38,7 +34,7 @@ module.exports = function FilterSpec(spec) {
     }
     EventEmitter.call(this);
   };
-  util.inherits(filter, EventEmitter);
+  inherits(filter, EventEmitter);
 
   /**
    * Returns meta data from the spec.
@@ -117,7 +113,7 @@ module.exports = function FilterSpec(spec) {
       var value = items[key];
 
       if (!spec.hasOwnProperty(key)) {
-        throw new Error(`There is no filter spec for ${key}`);
+        throw new Error("There is no filter spec for " + key);
       }
 
       if (this._data.hasOwnProperty(key)) {
@@ -239,3 +235,33 @@ module.exports = function FilterSpec(spec) {
 
   return filter;
 };
+
+/**
+ * A function for client+server side inheritance. Logic stolen from
+ * MeteorSpark:util
+ */
+var inherits = (function () {
+  if (Meteor.isServer) {
+    return Npm.require('util').inherits;
+  } else if (typeof Object.create === 'function') {
+    return function (ctor, superCtor) {
+      ctor.super_ = superCtor
+      ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+          value: ctor,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
+    };
+  } else {
+    return function (ctor, superCtor) {
+      ctor.super_ = superCtor
+      var TempCtor = function () {}
+      TempCtor.prototype = superCtor.prototype
+      ctor.prototype = new TempCtor()
+      ctor.prototype.constructor = ctor
+    };
+  }
+})();

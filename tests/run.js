@@ -3,6 +3,6 @@
 var testrunner = require('qunit');
 
 testrunner.run({
-  code: 'Filters.js',
-  tests: 'tests/tests.js',
+  code: '../Filters.js',
+  tests: './tests.js',
 });

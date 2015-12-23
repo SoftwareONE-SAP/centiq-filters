@@ -16,8 +16,6 @@ This library allows us to specify a "filter specification" containing informatio
 ## Example Usage
 
 ```javascript
-var Filter = require('./FilterSpec');
-
 var ProductFilter = new Filter({
   MinPrice: function (minPrice) {
     return {
@@ -65,18 +63,16 @@ var filter = new ProductFilter(serialized);
 
 If any of the values in the `serialized` object are invalid, then an `Error` object is thrown.
 
-We also provide a number of "filter factory functions" so you don't need to write snippets of Mongo queries. The above `ProductFilter` could be rewritten as:
+We also provide a number of "filter factory functions" in the Filters Object so you don't need to write snippets of Mongo queries. The above `ProductFilter` could be rewritten as:
 
 ```javascript
-var Filter  = require('./FilterSpec');
-var Filters = require('./Filters');
 var ProductFilter = new Filter({
-  MinPrice:    Filters.GteFilter('price'),
-  AddedBefore: Filters.LtFilter('added')
+  MinPrice:    Filters.Gte('price'),
+  AddedBefore: Filters.Lt('added')
 });
 ```
 
-As well as being less code, these factory functions do additional validation. For example, `GteFilter` and `LtFilter` both check that the value passed in is either a Date object or a number. If not, they throw an `Error` object.
+As well as being less code, these factory functions do additional validation. For example, `Filters.Gte` and `Filters.Lt` both check that the value passed in is either a `Date` Object or a `Number`. If not, they throw an `Error` object.
 
 You may want to write your own such factory functions for common filter types. For example, if you need to filter based on a date being between two other dates:
 
@@ -102,7 +98,7 @@ var DateBetweenFilter = function DateBetweenFilterFactory(field) {
 };
 
 var ProductFilter = new Filter({
-  MinPrice:     Filters.GteFilter('price'),
+  MinPrice:     Filters.Gte('price'),
   AddedBetween: DateBetweenFilter('added'),
 });
 
@@ -136,20 +132,16 @@ var serialized = filter.save();
 
 ## Filter Class
 
-```javascript
-var Filter = require('./FilterSpec');
-```
-
 The spec passed to the constructor is a series of key/values, where the key is the name for this part of the filter, and the value is a filter function which converts a value into a Mongo query. Instead of the value being a function, it can also be an Object containing a "filter" item. These are equivalent:
 
 ```javascript
 var ProductFilter = new Filter({
-  MinPrice: GteFilter('price')
+  MinPrice: Filters.Gte('price')
 });
 
 var ProductFilter = new Filter({
   MinPrice: {
-    filter: GteFilter('price')
+    filter: Filters.Gte('price')
   }
 });
 ```
@@ -159,7 +151,7 @@ The first version is compact, but the second version allows us to store more thi
 ```javascript
 var ProductFilter = new Filter({
   MinPrice: {
-    filter: GteFilter('price'),
+    filter: Filters.Gte('price'),
     meta: {
       template: Template.minPriceFilterTemplate
     }
@@ -257,7 +249,7 @@ In the above example, the mongo query is logged to the console after lines 3 and
 
 ## Filter Factories
 
-#### EqFilter
+#### Filters.Eq
 
 A direct "equals" comparison. [$eq](https://docs.mongodb.org/v3.0/reference/operator/query/eq/)
 
@@ -267,14 +259,14 @@ A direct "equals" comparison. [$eq](https://docs.mongodb.org/v3.0/reference/oper
 | Function arg1 | `String` or `Number` | Value       |
 
 ```javascript
-var filter = EqFilter('price');
+var filter = Filters.Eq('price');
 var result = filter(3);
 result == {
   'price': 3
 };
 ```
 
-#### GtFilter
+#### Filters.Gt
 
 A "greater than" comparison.
 [$gt](https://docs.mongodb.org/v3.0/reference/operator/query/gt/)
@@ -285,7 +277,7 @@ A "greater than" comparison.
 | Function arg1 | `Number` | Value       |
 
 ```javascript
-var filter = GtFilter('price');
+var filter = Filters.Gt('price');
 var result = filter(3);
 result == {
   'price': {
@@ -294,7 +286,7 @@ result == {
 };
 ```
 
-#### GteFilter
+#### Filters.Gte
 
 A "greater than or equal to" comparison.
 [$gte](https://docs.mongodb.org/v3.0/reference/operator/query/gte/)
@@ -305,7 +297,7 @@ A "greater than or equal to" comparison.
 | Function arg1 | `Number` | Value       |
 
 ```javascript
-var filter = GteFilter('price');
+var filter = Filters.Gte('price');
 var result = filter(3);
 result == {
   'price': {
@@ -314,7 +306,7 @@ result == {
 };
 ```
 
-#### LtFilter
+#### Filters.Lt
 
 A "less than" comparison.
 [$lt](https://docs.mongodb.org/v3.0/reference/operator/query/lt/)
@@ -325,7 +317,7 @@ A "less than" comparison.
 | Function arg1 | `Number` | Value       |
 
 ```javascript
-var filter = LtFilter('price');
+var filter = Filters.Lt('price');
 var result = filter(3);
 result == {
   'price': {
@@ -334,7 +326,7 @@ result == {
 };
 ```
 
-#### LtFilter
+#### Filters.Lte
 
 A "less than or equal to" comparison.
 [$lte](https://docs.mongodb.org/v3.0/reference/operator/query/lte/)
@@ -345,7 +337,7 @@ A "less than or equal to" comparison.
 | Function arg1 | `Number` | Value       |
 
 ```javascript
-var filter = LteFilter('price');
+var filter = Filters.Lte('price');
 var result = filter(3);
 result == {
   'price': {
@@ -354,7 +346,7 @@ result == {
 };
 ```
 
-#### InFilter
+#### Filters.In
 
 A "must be one of" comparison.
 [$in](https://docs.mongodb.org/v3.0/reference/operator/query/in/)
@@ -365,7 +357,7 @@ A "must be one of" comparison.
 | Function arg1 | `Array`  | Value       |
 
 ```javascript
-var filter = InFilter('price');
+var filter = Filters.In('price');
 var result = filter([2, 3, 4]);
 result == {
   'price': {
@@ -374,7 +366,7 @@ result == {
 };
 ```
 
-#### NinFilter
+#### Filters.Nin
 
 A "must not be one of" comparison.
 [$nin](https://docs.mongodb.org/v3.0/reference/operator/query/nin/)
@@ -385,7 +377,7 @@ A "must not be one of" comparison.
 | Function arg1 | `Array`  | Value       |
 
 ```javascript
-var filter = InFilter('price');
+var filter = Filters.Nin('price');
 var result = filter([2, 3, 4]);
 result == {
   'price': {
@@ -394,7 +386,7 @@ result == {
 };
 ```
 
-#### OrFilter
+#### Filters.Or
 
 A Boolean OR filter.
 [$or](https://docs.mongodb.org/v3.0/reference/operator/query/or/)
@@ -405,9 +397,9 @@ A Boolean OR filter.
 | Function arg1 | `Array` OR `Object` | Value       |
 
 ```javascript
-var filter = OrFilter([
-  EqFilter('price')(0),
-  GtFilter('price')(4)
+var filter = Filters.Or([
+  Filters.Eq('price')(0),
+  Filters.Gt('price')(4)
 ]);
 var result = filter();
 result == {
@@ -421,9 +413,9 @@ result == {
 In the above example, we are hard coding the two values inside the factory function. This is not ideal. You can alternatively use Object notiation instead of Array notation in order to pass values through from the filter function. The following would produce the exact same result as above:
 
 ```javascript
-var filter = OrFilter({
-  ExactPrice: EqFilter('price'),
-  GtPrice:    GtFilter('price')
+var filter = Filters.Or({
+  ExactPrice: Filters.Eq('price'),
+  GtPrice:    Filters.Gt('price')
 });
 var result = filter({
   ExactPrice: 0,
@@ -434,12 +426,12 @@ var result = filter({
 You can create queries of arbitrary depth using this method:
 
 ```javascript
-var filter = OrFilter({
-  price:  OrFilter({
-    exact: EqFilter('price'),
-    above: GtFilter('price'),
+var filter = Filters.Or({
+  price:  Filters.Or({
+    exact: Filters.Eq('price'),
+    above: Filters.Gt('price'),
   }),
-  status: EqFilter('status'),
+  status: Filters.Eq('status'),
 });
 
 var result = filter({
@@ -472,12 +464,12 @@ result == {
 It would also have been possible to shift the "active" status into the factory function above, so it doesn't need to be specified when the filter function is called:
 
 ```javascript
-var filter = OrFilter({
-  price:  OrFilter({
-    exact: EqFilter('price'),
-    above: GtFilter('price'),
+var filter = Filters.Or({
+  price:  Filters.Or({
+    exact: Filters.Eq('price'),
+    above: Filters.Gt('price'),
   }),
-  status: EqFilter('status')('active'),
+  status: Filters.Eq('status')('active'),
 });
 
 var result = filter({
@@ -488,7 +480,7 @@ var result = filter({
 });
 ```
 
-#### AndFilter
+#### Filters.And
 
 A Boolean AND filter.
 [$and](https://docs.mongodb.org/v3.0/reference/operator/query/and/)
@@ -498,9 +490,9 @@ A Boolean AND filter.
 | Factory  arg1 | `String`            | Field name  |
 | Function arg1 | `Array` OR `Object` | Value       |
 
-See [OrFilter](#orfilter). It works exactly the same except uses $and instead of $or
+See [Filters.Or](#orfilter). It works exactly the same except uses $and instead of $or
 
-#### NotFilter
+#### Filters.Not
 
 A "must not be" comparison.
 [$not](https://docs.mongodb.org/v3.0/reference/operator/query/not/)
@@ -511,7 +503,7 @@ A "must not be" comparison.
 | Function arg1 | anything  | Value       |
 
 ```javascript
-var filter = NotFilter(EqFilter('price'));
+var filter = Filters.Not(Filters.Eq('price'));
 var result = filter(5);
 result == {
   'price': {
@@ -522,9 +514,9 @@ result == {
 };
 ```
 
-The filter function provided by the NotFilter factory function, passes the value supplied to its child.
+The filter function provided by the Filters.Not factory function, passes the value supplied to its child.
 
-The Mongo $not filter is strange in that it is incompatible with certain queries. The NotFilter factory function tries to restructure things to make them work. For example, the following 3 are invalid:
+The Mongo $not filter is strange in that it is incompatible with certain queries. The Filters.Not factory function tries to restructure things to make them work. For example, the following 3 are invalid:
 
 ```javascript
 1. { price: { $not: 3 } }
@@ -540,7 +532,7 @@ So they are converted to these valid versions:
 3. { $where: function() { return !(someFunction.apply(this, arguments)) } }
 ```
 
-#### NorFilter
+#### Filters.Nor
 
 A Boolean NOT OR filter.
 [$nor](https://docs.mongodb.org/v3.0/reference/operator/query/nor/)
@@ -550,9 +542,9 @@ A Boolean NOT OR filter.
 | Factory  arg1 | `String`            | Field name  |
 | Function arg1 | `Array` OR `Object` | Value       |
 
-See [OrFilter](#orfilter). It works exactly the same except uses $nor instead of $or
+See [Filters.Or](#orfilter). It works exactly the same except uses $nor instead of $or
 
-#### ExistsFilter
+#### Filters.Exists
 
 A "exists" comparison.
 [$exists](https://docs.mongodb.org/v3.0/reference/operator/query/exists/)
@@ -563,7 +555,7 @@ A "exists" comparison.
 | Function arg1 | `Boolean` | Optional. Defaults to true |
 
 ```javascript
-var filter = ExistsFilter('price');
+var filter = Filters.Exists('price');
 
 var result = filter(false);
 result == {
@@ -580,7 +572,7 @@ result == {
 };
 ```
 
-#### TypeFilter
+#### Filters.Type
 
 A "must be of this type" comparison.
 [$type](https://docs.mongodb.org/v3.0/reference/operator/query/type/)
@@ -591,7 +583,7 @@ A "must be of this type" comparison.
 | Factory arg2 | `Number` | Field value type |
 
 ```javascript
-var filter = TypeFilter('date', 9);
+var filter = Filters.Type('date', 9);
 var result = filter();
 result == {
   'date': {
@@ -600,7 +592,7 @@ result == {
 };
 ```
 
-#### ModFilter
+#### Filters.Mod
 
 A "given this divisor, must match this remainder" comparison.
 [$mod](https://docs.mongodb.org/v3.0/reference/operator/query/mod/)
@@ -611,7 +603,7 @@ A "given this divisor, must match this remainder" comparison.
 | Function arg1 | `Object` | Contains divisor and remainder |
 
 ```javascript
-var filter = ModFilter('price');
+var filter = Filters.Mod('price');
 var result = filter({ divisor: 2, remainder: 1 });
 result == {
   'price': {
@@ -622,7 +614,7 @@ result == {
 
 The above would pick out all documents where the "price" value is an odd number (1, 3, 5 etc).
 
-#### RegexFilter
+#### Filters.Regex
 
 A "must match this regular expression" comparison.
 [$regex](https://docs.mongodb.org/v3.0/reference/operator/query/regex/)
@@ -634,9 +626,9 @@ A "must match this regular expression" comparison.
 | Factory arg3 | `String`             | Optional regex specifiers      |
 
 ```javascript
-var filter = RegexFilter('name', '^A', 'i'); // or:
-var filter = RegexFilter('name', /^A/, 'i'); // or:
-var filter = RegexFilter('name', /^A/i);
+var filter = Filters.Regex('name', '^A', 'i'); // or:
+var filter = Filters.Regex('name', /^A/, 'i'); // or:
+var filter = Filters.Regex('name', /^A/i);
 
 var result = filter();
 result == {
@@ -646,7 +638,7 @@ result == {
 };
 ```
 
-#### TextFilter
+#### Filters.Text
 
 A "must match this text" comparison.
 [$text](https://docs.mongodb.org/v3.0/reference/operator/query/text/)
@@ -657,7 +649,7 @@ A "must match this text" comparison.
 | Function arg1 | `String` | String to search for |
 
 ```javascript
-var filter = TextFilter('en');
+var filter = Filters.Text('en');
 var result = filter('Mike Cardwell');
 result == {
   $text: {
@@ -669,7 +661,7 @@ result == {
 
 Unlike the other filter factories we've looked at up until this point, we don't specify a field name. That is because Mongo searches any field with a text index in the collection.
 
-#### WhereFilter
+#### Filters.Where
 
 A "function run on document must return true" comparison.
 [$where](https://docs.mongodb.org/v3.0/reference/operator/query/where/)
@@ -680,7 +672,7 @@ A "function run on document must return true" comparison.
 | Function args | anything               | All args passed to function supplied in Factory arg1  |
 
 ```javascript
-var filter = WhereFilter(function(field, min){
+var filter = Filters.Where(function(field, min){
   return this[ field ] >= min;
 });
 var result = filter('price', 3);
@@ -691,7 +683,7 @@ result == {
 };
 ```
 
-#### AllFilter
+#### Filters.All
 
 A "all values must be contained in doc" comparison.
 [$all](https://docs.mongodb.org/v3.0/reference/operator/query/all/)
@@ -702,7 +694,7 @@ A "all values must be contained in doc" comparison.
 | Function arg1 | `Array`                | Values      |
 
 ```javascript
-var filter = AllFilter('names');
+var filter = Filters.All('names');
 var result = filter(['Mike', 'Cardwell']);
 result == {
   names: {
@@ -714,7 +706,7 @@ result == {
 };
 ```
 
-#### ElemMatchFilter
+#### Filters.ElemMatch
 
 A "at least one element query must match doc" comparison.
 [$elemMatch](https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/)
@@ -725,7 +717,7 @@ A "at least one element query must match doc" comparison.
 | Function arg1 | `Object` | Queries     |
 
 ```javascript
-var filter = ElemMatchFilter('price');
+var filter = Filters.ElemMatch('price');
 var result = filter({
   $lt: 5,
   $gt: 10
@@ -740,7 +732,7 @@ result == {
 };
 ```
 
-#### SizeFilter
+#### Filters.Size
 
 A "array must have this many items" comparison.
 [$size](https://docs.mongodb.org/v3.0/reference/operator/query/size/)
@@ -751,7 +743,7 @@ A "array must have this many items" comparison.
 | Function arg1 | `Number` | Number of items |
 
 ```javascript
-var filter = SizeFilter('names');
+var filter = Filters.Size('names');
 var result = filter(2);
 result == {
   names: {
@@ -765,6 +757,7 @@ result == {
 There are a tests for the filter factory functions. You can run them by doing this:
 
 ```bash
-npm install --only=dev
+cd tests
+npm install
 npm test
 ```

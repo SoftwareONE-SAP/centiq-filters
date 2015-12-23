@@ -1,18 +1,20 @@
+Filters = {};
+
 /**
- * EqFilter(field)(value)
+ * Eq(field)(value)
  *
  * { field: { $eq: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/eq/
  */
-module.exports.EqFilter = function EqFilterFactory(field) {
+Filters.Eq = function EqFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('EqFilter takes a single String argument');
+    throw new Error('Eq takes a single String argument');
   }
-  return function EqFilter(value) {
+  return function Eq(value) {
     if (value !== null && typeof value !== 'string' && typeof value !==
       'number') {
-      throw new Error('Invalid value passed to EqFilter for ' + field);
+      throw new Error('Invalid value passed to Eq for ' + field);
     }
     var selector = {};
     selector[field] = value;
@@ -21,21 +23,21 @@ module.exports.EqFilter = function EqFilterFactory(field) {
 };
 
 /**
- * GtFilter(field)(value)
+ * Gt(field)(value)
  *
  * { field: { $gt: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gt/
  */
-module.exports.GtFilter = function GtFilterFactory(field) {
+Filters.Gt = function GtFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('GtFilter takes a single String argument');
+    throw new Error('Gt takes a single String argument');
   }
-  return function GtFilter(value) {
+  return function Gt(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
       if (isNaN(value)) {
-        throw new Error('Invalid value passed to GtFilter for ' + field);
+        throw new Error('Invalid value passed to Gt for ' + field);
       }
     }
     var selector = {};
@@ -47,21 +49,21 @@ module.exports.GtFilter = function GtFilterFactory(field) {
 };
 
 /**
- * GteFilter(field)(value)
+ * Gte(field)(value)
  *
  * { field: { $gte: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gte/
  */
-module.exports.GteFilter = function GteFilterFactory(field) {
+Filters.Gte = function GteFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('GteFilter takes a single String argument');
+    throw new Error('Gte takes a single String argument');
   }
-  return function GteFilter(value) {
+  return function Gte(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
       if (isNaN(value)) {
-        throw new Error('Invalid value passed to GteFilter for ' + field);
+        throw new Error('Invalid value passed to Gte for ' + field);
       }
     }
     var selector = {};
@@ -73,21 +75,21 @@ module.exports.GteFilter = function GteFilterFactory(field) {
 };
 
 /**
- * LtFilter(field)(value)
+ * Lt(field)(value)
  *
  * { field: { $lt: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lt/
  */
-module.exports.LtFilter = function LtFilterFactory(field) {
+Filters.Lt = function LtFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('LtFilter takes a single String argument');
+    throw new Error('Lt takes a single String argument');
   }
-  return function LtFilter(value) {
+  return function Lt(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
       if (isNaN(value)) {
-        throw new Error('Invalid value passed to LtFilter for ' + field);
+        throw new Error('Invalid value passed to Lt for ' + field);
       }
     }
     var selector = {};
@@ -99,21 +101,21 @@ module.exports.LtFilter = function LtFilterFactory(field) {
 };
 
 /**
- * LteFilter(field)(value)
+ * Lte(field)(value)
  *
  * { field: { $lte: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lte/
  */
-module.exports.LteFilter = function LteFilterFactory(field) {
+Filters.Lte = function LteFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('LteFilter takes a single String argument');
+    throw new Error('Lte takes a single String argument');
   }
-  return function LteFilter(value) {
+  return function Lte(value) {
     if (typeof value !== 'number' && !(value instanceof Date)) {
       value = parseFloat(value);
       if (isNaN(value)) {
-        throw new Error('Invalid value passed to LteFilter for ' + field);
+        throw new Error('Invalid value passed to Lte for ' + field);
       }
     }
     var selector = {};
@@ -125,19 +127,19 @@ module.exports.LteFilter = function LteFilterFactory(field) {
 };
 
 /**
- * InFilter(field)([values])
+ * In(field)([values])
  *
  * { field: { $in: [values] } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/in/
  */
-module.exports.InFilter = function InFilterFactory(field) {
+Filters.In = function InFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('InFilter takes a single String argument');
+    throw new Error('In takes a single String argument');
   }
-  return function InFilter(values) {
+  return function In(values) {
     if (!Array.isArray(values)) {
-      throw new Error('Invalid value passed to InFilter');
+      throw new Error('Invalid value passed to In');
     }
     var selector = {};
     selector[field] = {
@@ -148,19 +150,19 @@ module.exports.InFilter = function InFilterFactory(field) {
 };
 
 /**
- * NinFilter(field)([values])
+ * Nin(field)([values])
  *
  * { field: { $nin: [values] } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nin/
  */
-module.exports.NinFilter = function NinFilterFactory(field) {
+Filters.Nin = function NinFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('NinFilter takes a single String argument');
+    throw new Error('Nin takes a single String argument');
   }
-  return function NinFilter(values) {
+  return function Nin(values) {
     if (!Array.isArray(values)) {
-      throw new Error('Invalid value passed to NinFilter');
+      throw new Error('Invalid value passed to Nin');
     }
     var selector = {};
     selector[field] = {
@@ -171,7 +173,7 @@ module.exports.NinFilter = function NinFilterFactory(field) {
 };
 
 /**
- * OrFilter({
+ * Or({
  * 	k1: filter1
  * 	k2: filter2,
  * 	k3: filter3(10),
@@ -181,16 +183,16 @@ module.exports.NinFilter = function NinFilterFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/or/
  */
-module.exports.OrFilter = function OrFilterFactory(filters) {
+Filters.Or = function OrFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
-    throw new Error('OrFilter takes a single Object argument');
+    throw new Error('Or takes a single Object argument');
   }
-  return function OrFilter(values) {
+  return function Or(values) {
     if (typeof values === 'undefined') {
       values = {};
     }
     if (typeof values !== 'object') {
-      throw new Error('Invalid value passed to OrFilter');
+      throw new Error('Invalid value passed to Or');
     }
     var queries = [];
     if (Array.isArray(filters)) {
@@ -211,7 +213,7 @@ module.exports.OrFilter = function OrFilterFactory(filters) {
 };
 
 /**
- * AndFilter({
+ * And({
  * 	k1: filter1
  * 	k2: filter2,
  * 	k3: filter3(10),
@@ -221,16 +223,16 @@ module.exports.OrFilter = function OrFilterFactory(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/and/
  */
-module.exports.AndFilter = function AndFilterFactory(filters) {
+Filters.And = function AndFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
-    throw new Error('AndFilter takes a single Object argument');
+    throw new Error('And takes a single Object argument');
   }
-  return function AndFilter(values) {
+  return function And(values) {
     if (typeof values === 'undefined') {
       values = {};
     }
     if (typeof values !== 'object') {
-      throw new Error('Invalid value passed to AndFilter');
+      throw new Error('Invalid value passed to And');
     }
     var queries = [];
     if (Array.isArray(filters)) {
@@ -251,17 +253,17 @@ module.exports.AndFilter = function AndFilterFactory(filters) {
 };
 
 /**
- * NotFilter(GtFilter(field))(3)
+ * Not(Gt(field))(3)
  *
  * { field: { $not: { $gt: 3 } } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/not/
  */
-module.exports.NotFilter = function NotFilterFactory(func) {
+Filters.Not = function NotFactory(func) {
   if (arguments.length !== 1 || typeof func !== 'function') {
-    throw new Error('EqFilter takes a single Function argument');
+    throw new Error('Eq takes a single Function argument');
   }
-  return function NotFilter(value) {
+  return function Not(value) {
     var selector = func(value);
 
     /**
@@ -312,7 +314,7 @@ module.exports.NotFilter = function NotFilterFactory(func) {
 };
 
 /**
- * NorFilter({
+ * Nor({
  * 	k1: filter1
  * 	k2: filter2,
  * 	k3: filter3(10),
@@ -322,16 +324,16 @@ module.exports.NotFilter = function NotFilterFactory(func) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nor/
  */
-module.exports.NorFilter = function NorFilterFactory(filters) {
+Filters.Nor = function NorFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
-    throw new Error('NorFilter takes a single Object argument');
+    throw new Error('Nor takes a single Object argument');
   }
-  return function NorFilter(values) {
+  return function Nor(values) {
     if (typeof values === 'undefined') {
       values = {};
     }
     if (typeof values !== 'object') {
-      throw new Error('Invalid value passed to NorFilter');
+      throw new Error('Invalid value passed to Nor');
     }
     var queries = [];
     if (Array.isArray(filters)) {
@@ -352,16 +354,16 @@ module.exports.NorFilter = function NorFilterFactory(filters) {
 };
 
 /**
- * ExistsFilter(field)()      => { field: { $exists: true } }
- * ExistsFilter(field)(false) => { field: { $exists: false } }
+ * Exists(field)()      => { field: { $exists: true } }
+ * Exists(field)(false) => { field: { $exists: false } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/exists/
  */
-module.exports.ExistsFilter = function ExistsFilterFactory(field) {
+Filters.Exists = function ExistsFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('ExistsFilter takes a single String argument');
+    throw new Error('Exists takes a single String argument');
   }
-  return function ExistsFilter(value) {
+  return function Exists(value) {
     if (typeof value === 'undefined') value = true;
     var selector = {};
     selector[field] = {
@@ -372,17 +374,17 @@ module.exports.ExistsFilter = function ExistsFilterFactory(field) {
 };
 
 /**
- * TypeFilter(field, value)()
+ * Type(field, value)()
  *
  * { field: { $type: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/type/
  */
-module.exports.TypeFilter = function TypeFilterFactory(field, value) {
+Filters.Type = function TypeFactory(field, value) {
   if (arguments.length !== 2 || typeof field !== 'string' || typeof value !== 'number' || isNaN(value)) {
-    throw new Error('TypeFilter takes a String argument followed by a number');
+    throw new Error('Type takes a String argument followed by a number');
   }
-  return function TypeFilter() {
+  return function Type() {
     var selector = {};
     selector[field] = {
       $type: value
@@ -392,18 +394,18 @@ module.exports.TypeFilter = function TypeFilterFactory(field, value) {
 };
 
 /**
- * ModFilter(field)({ divisor: 5, remainder: 1 })
+ * Mod(field)({ divisor: 5, remainder: 1 })
  *
  * { field: { $mod: [5, 1] } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/mod/
  */
-module.exports.ModFilter = function ModFilterFactory(field) {
+Filters.Mod = function ModFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('ModFilter takes a single String argument');
+    throw new Error('Mod takes a single String argument');
   }
-  return function ModFilter(value) {
-    var error = new Error('Invalid value passwd to ModFilter');
+  return function Mod(value) {
+    var error = new Error('Invalid value passwd to Mod');
 
     if (typeof value !== 'object') throw error;
 
@@ -422,23 +424,23 @@ module.exports.ModFilter = function ModFilterFactory(field) {
 };
 
 /**
- * RegexFilter(field)(/value/)
+ * Regex(field)(/value/)
  *     { field: /value/ } }
  *
- * RegexFilter(field)(value)
+ * Regex(field)(value)
  *     { field: /value/ } }
  *
- * RegexFilter(field, options)(value)
+ * Regex(field, options)(value)
  *     { field: { $regex: value, $options: options } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/regex/
  */
-module.exports.RegexFilter = function RegexFilterFactory(field, regex, options) {
+Filters.Regex = function RegexFactory(field, regex, options) {
   if (typeof field !== 'string'
     || (typeof regex   !== 'string'    && typeof regex !== 'number' && !(regex instanceof RegExp) )
     || (typeof options !== 'undefined' && typeof options !== 'string' && options !== null)
   ) {
-    throw new Error('RegexFilter received invalid args');
+    throw new Error('Regex received invalid args');
   }
 
   regex = fixupRegex({
@@ -446,7 +448,7 @@ module.exports.RegexFilter = function RegexFilterFactory(field, regex, options) 
     $options: options,
   });
 
-  return function RegexFilter(value) {
+  return function Regex(value) {
     var selector = {};
     selector[field] = regex;
     return selector;
@@ -454,22 +456,22 @@ module.exports.RegexFilter = function RegexFilterFactory(field, regex, options) 
 };
 
 /**
- * TextFilter(language)(value)
+ * Text(language)(value)
  *
  * { $text: { $search: value, $language: language }}
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/text/
  */
-module.exports.TextFilter = function TextFilterFactory(language) {
+Filters.Text = function TextFactory(language) {
   if (arguments.length > 1 || (typeof language !== 'string' && typeof language !== 'undefined' && language !== null)) {
-    throw new Error('TextFilter takes a single optional String argument');
+    throw new Error('Text takes a single optional String argument');
   }
-  return function TextFilter(value) {
+  return function Text(value) {
 
     if (typeof value === 'number') {
       value = String(value);
     } else if (typeof value !== 'string') {
-      throw new Error('Invalid value passed to TextFilter');
+      throw new Error('Invalid value passed to Text');
     }
 
     var selector = {
@@ -485,21 +487,21 @@ module.exports.TextFilter = function TextFilterFactory(language) {
 };
 
 /**
- * WhereFilter(func)(value)
+ * Where(func)(value)
  *
  * { $where: function(value) { return func.apply(this, arguments) } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/where/
  */
-module.exports.WhereFilter = function WhereFilterFactory(func) {
+Filters.Where = function WhereFactory(func) {
   if (arguments.length !== 1 || (typeof func !== 'string' && typeof func !== 'function')) {
-    throw new Error('WhereFilter takes a single String or Function argument');
+    throw new Error('Where takes a single String or Function argument');
   }
 
   if (typeof func === 'string') {
     func = Function('return ' + func);
   }
-  return function WhereFilter(value) {
+  return function Where(value) {
 
     var funcWrapper = function() {
       return func.call(this, value);
@@ -512,19 +514,19 @@ module.exports.WhereFilter = function WhereFilterFactory(func) {
 };
 
 /**
- * AllFilter(field)(values)
+ * All(field)(values)
  *
  * { field: { $all: values } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/all/
  */
-module.exports.AllFilter = function AllFilterFactory(field) {
+Filters.All = function AllFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('AllFilter takes a single String argument');
+    throw new Error('All takes a single String argument');
   }
-  return function AllFilter(filters) {
+  return function All(filters) {
     if (!Array.isArray(filters)) {
-      throw new Error('Invalid value passed to AllFilter');
+      throw new Error('Invalid value passed to All');
     }
     var selector = {};
     selector[field] = {
@@ -535,19 +537,19 @@ module.exports.AllFilter = function AllFilterFactory(field) {
 };
 
 /**
- * ElemMatchFilter(field)({values})
+ * ElemMatch(field)({values})
  *
  * { field: { $elemMatch: {values} } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/
  */
-module.exports.ElemMatchFilter = function ElemMatchFilterFactory(field) {
+Filters.ElemMatch = function ElemMatchFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('ElemMatchFilter takes a single String argument');
+    throw new Error('ElemMatch takes a single String argument');
   }
-  return function ElemMatchFilter(value) {
+  return function ElemMatch(value) {
     if (typeof value !== 'object') {
-      throw new Error('Invalid value passed to ElemMatchFilter');
+      throw new Error('Invalid value passed to ElemMatch');
     }
     var selector = {};
     selector[field] = {
@@ -558,20 +560,20 @@ module.exports.ElemMatchFilter = function ElemMatchFilterFactory(field) {
 };
 
 /**
- * SizeFilter(field)(value)
+ * Size(field)(value)
  *
  * { field: { $size: value } }
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/size/
  */
-module.exports.SizeFilter = function SizeFilterFactory(field) {
+Filters.Size = function SizeFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
-    throw new Error('SizeFilter takes a single String argument');
+    throw new Error('Size takes a single String argument');
   }
-  return function SizeFilter(value) {
+  return function Size(value) {
     value = parseInt(value);
     if (isNaN(value)) {
-      throw new Error('Invalid value passed to SizeFilter');
+      throw new Error('Invalid value passed to Size');
     }
     var selector = {};
     selector[field] = {
