@@ -51,7 +51,13 @@ Filter = function Filter(spec) {
       });
       return meta;
     } else {
-      return spec[name].meta || {};
+      var meta = spec[name].filter.meta || {};
+      if (spec[name].hasOwnProperty('meta')) {
+        Object.keys(spec[name].meta).forEach(function(k){
+          meta[k] = spec[name].meta[k];
+        });
+      }
+      return meta;
     }
   };
 

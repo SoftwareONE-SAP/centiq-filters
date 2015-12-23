@@ -168,6 +168,38 @@ var minPriceTemplate = ProductFilter.meta().MinPrice.template;
 
 "template" is arbitrary. You can store whatever data you want in there.
 
+Another way of storing meta data is to store it as a value on the actual filter function. The two meta data locations are merged at the top level with the one discussed first taking priority. So for example:
+
+```javascript
+function CustomFilter (field) {
+  var filter_func = function (value) {
+    var q = {};
+    q[ field ] = value * 2;
+    return q;
+  };
+  filter_func.meta = {
+    foo: 123,
+    bar: 234,
+  };
+  return filter_func;
+};
+
+var ProductFilter = new Filter({
+  MinPrice: {
+    filter: CustomFilter('price'),
+    meta: {
+      bar: 789,
+    }
+  }
+});
+
+ProductFilter.meta('MinPrice') ==
+{
+  foo: 123,
+  bar: 789,
+}
+```
+
 Now we have ProductFilter, we want to create an instance of it which we can set values for MinPrice on.
 
 ```javascript
