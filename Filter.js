@@ -93,6 +93,14 @@ Filter = function Filter(spec) {
   };
 
   /**
+   * Retrieve a saved filter value
+   */
+  filter.prototype.get = function get(name) {
+    if (!this._data.hasOwnProperty(name)) return undefined;
+    return EJSON.clone(this._data[ name ].value);
+  },
+
+  /**
    * Set a filter value
    * @param {String}   key   Key of filter value to set
    * @param {anything} value Value to set
@@ -140,6 +148,14 @@ Filter = function Filter(spec) {
     if (changed) this.emit('change');
 
     return this;
+  };
+
+  /**
+   * Return if a particular filter is enabled
+   */
+  filter.prototype.enabled = function enabled(name) {
+    if (!this._data.hasOwnProperty(name)) return false;
+    return this._data[ name ].enabled;
   };
 
   /**
