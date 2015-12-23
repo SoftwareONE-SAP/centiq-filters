@@ -222,8 +222,8 @@ Filter = function Filter(spec) {
     var compact = {};
     queries.forEach(function(query) {
       Object.keys(query).forEach(function(k) {
-        if (compact.hasOwnProperty(k)) compact = null;
         if (compact === null) return;
+        if (compact.hasOwnProperty(k)) return compact = null;
         compact[k] = query[k];
       });
     });
