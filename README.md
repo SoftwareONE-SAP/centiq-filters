@@ -1,4 +1,4 @@
-# Filters
+# Meteor Filters
 
 **WARNING** - This is a very new library and is currently in heavily active development and its API will definitely change in various backwards incompatible ways. I will remove this warning when it stabilises. Use at your own risk.
 
@@ -11,7 +11,7 @@ We need a way to let a user specify the content of a Mongo query, for filtering 
 }
 ```
 
-This library allows us to specify a "filter specification" containing information on exactly what values an end-user is allowed to supply for a particular filter.
+This Meteor package allows us to specify a "filter specification" containing information on exactly what values an end-user is allowed to supply for a particular filter.
 
 ## Example Usage
 
