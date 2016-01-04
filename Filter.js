@@ -23,6 +23,7 @@ Filter = function Filter(spec) {
   var filter = function Filter(set) {
     this._data = {};
     this._reset = {};
+    EventEmitter.call(this);
     if (set) {
       Object.keys(set).forEach(function(k){
         this._reset[k] = {
@@ -32,7 +33,6 @@ Filter = function Filter(spec) {
       }.bind(this));
       this.set(set);
     }
-    EventEmitter.call(this);
   };
   inherits(filter, EventEmitter);
 
