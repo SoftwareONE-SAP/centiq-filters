@@ -62,9 +62,27 @@ Filter = function Filter(spec) {
   };
 
   filter.prototype.reset = function() {
-    var changed = !EJSON.equals(this._data, this._reset);
-    this._data = EJSON.clone(this._reset);
-    if (changed) this.emit('change');
+
+    var set = arguments[0];
+    if (arguments.length > 1) {
+      set = {};
+      set[arguments[0]] = arguments[1];
+    }
+
+    var from   = this._data;
+    var to     = this._reset;
+    this._data = EJSON.clone(to);
+
+    if (set) {
+      // Temporarily disable emit so a change event isn't triggered
+      var emit = this.emit;
+      this.emit = function(){};
+      this.set(set);
+      this.emit = emit;
+      to = this._data;
+    }
+
+    if (!EJSON.equals(from, to)) this.emit('change');
   };
 
   /**
@@ -92,10 +110,27 @@ Filter = function Filter(spec) {
    * Clear all filter values
    */
   filter.prototype.clear = function clear() {
-    var changed = !!Object.keys(this._data).length;
-    this._data = {};
-    if (changed) this.emit('change');
-    return this;
+
+    var set = arguments[0];
+    if (arguments.length > 1) {
+      set = {};
+      set[arguments[0]] = arguments[1];
+    }
+
+    var from   = this._data;
+    var to     = {};
+    this._data = to;
+
+    if (set) {
+      // Temporarily disable emit so a change event isn't triggered
+      var emit = this.emit;
+      this.emit = function(){};
+      this.set(set);
+      this.emit = emit;
+      to = this._data;
+    }
+
+    if (!EJSON.equals(from, to)) this.emit('change');
   };
 
   /**

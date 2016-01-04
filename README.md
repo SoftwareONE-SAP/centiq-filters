@@ -234,6 +234,8 @@ To reset the object data to what it was when it was originally constructed:
 filter.reset();
 ```
 
+If any arguments are passed to `clear` or `reset`, they are proxied through to `set` after the `clear` or `reset` operation is performed. A call to these functions will only trigger a maximum of one `change` event, and only if the final result is different to the original.
+
 You can also disable a filter value rather than removing it. Then if you re-enable it, it will contain the previous value that it had. Note, disabled values don't appear when calling "save" or "query".
 
 ```javascript
