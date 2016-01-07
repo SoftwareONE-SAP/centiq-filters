@@ -16,7 +16,7 @@ This Meteor package allows us to specify a "filter specification" containing inf
 ## Example Usage
 
 ```javascript
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice: function (minPrice) {
     return {
       price: {
@@ -66,7 +66,7 @@ If any of the values in the `serialized` object are invalid, then an `Error` obj
 We also provide a number of "filter factory functions" in the Filter Object so you don't need to write snippets of Mongo queries. The above `ProductFilter` could be rewritten as:
 
 ```javascript
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice:    Filter.Gte('price'),
   AddedBefore: Filter.Lt('added')
 });
@@ -97,7 +97,7 @@ var DateBetweenFilter = function DateBetweenFilterFactory(field) {
   };
 };
 
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice:     Filter.Gte('price'),
   AddedBetween: DateBetweenFilter('added'),
 });
@@ -135,11 +135,11 @@ var serialized = filter.save();
 The spec passed to the constructor is a series of key/values, where the key is the name for this part of the filter, and the value is a filter function which converts a value into a Mongo query. Instead of the value being a function, it can also be an Object containing a "filter" item. These are equivalent:
 
 ```javascript
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice: Filter.Gte('price')
 });
 
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice: {
     filter: Filter.Gte('price')
   }
@@ -149,7 +149,7 @@ var ProductFilter = new Filter({
 The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. Here we store information about a "template" that we might want to use to let the user select what min-price to filter on:
 
 ```javascript
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice: {
     filter: Filter.Gte('price'),
     meta: {
@@ -184,7 +184,7 @@ function CustomFilter (field) {
   return filter_func;
 };
 
-var ProductFilter = new Filter({
+var ProductFilter = Filter.create({
   MinPrice: {
     filter: CustomFilter('price'),
     meta: {

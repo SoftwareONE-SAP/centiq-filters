@@ -2,7 +2,9 @@
  * Create a new Filter class given a Filter specification
  * @param {Object} spec A description of a set of filters
  */
-Filter = function Filter(spec) {
+Filter = typeof Filter === 'undefined' ? {} : Filter;
+
+Filter.create = function FilterCreateSpec(spec) {
 
   /**
    * Convert compact format { foo: function }
