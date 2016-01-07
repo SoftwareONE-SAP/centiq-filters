@@ -19,12 +19,11 @@ Package.onUse(function(api) {
   ]);
 
   api.addFiles([
-    'Filters.js',
     'Filter.js',
+    'filters/core.js',
   ]);
 
   api.export([
-    'Filters',
     'Filter',
   ]);
 });

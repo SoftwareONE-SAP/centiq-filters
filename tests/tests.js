@@ -1,11 +1,11 @@
-QUnit.test('Filters.Eq', function() {
+QUnit.test('Filter.Eq', function() {
   deepEqual(
-    Filters.Eq('field')(5), {
+    Filter.Eq('field')(5), {
       field: 5
     }
   );
   throws(function() {
-    Filters.Eq('field')({
+    Filter.Eq('field')({
       bad: 'value'
     })
   });
@@ -13,47 +13,47 @@ QUnit.test('Filters.Eq', function() {
 
 ['gt', 'gte', 'lt', 'lte'].forEach(function(type) {
   var name = ucfirst(type);
-  QUnit.test('Filters.' + name, function() {
+  QUnit.test('Filter.' + name, function() {
     var inner = {};
     inner['$' + type] = 5;
     deepEqual(
-      Filters[name]('field')(5), {
+      Filter[name]('field')(5), {
         field: inner
       }
     );
     inner['$' + type] = new Date();
     deepEqual(
-      Filters[name]('field')(inner['$' + type]), {
+      Filter[name]('field')(inner['$' + type]), {
         field: inner
       }
     );
     throws(function() {
-      Filters[name]('field')('wibble');
+      Filter[name]('field')('wibble');
     });
   });
 });
 
 ['in', 'nin'].forEach(function(type) {
   var name = ucfirst(type);
-  QUnit.test('Filters.' + name, function() {
+  QUnit.test('Filter.' + name, function() {
     var inner = {};
     inner['$' + type] = [5, 6];
     deepEqual(
-      Filters[name]('field')([5, 6]), {
+      Filter[name]('field')([5, 6]), {
         field: inner,
       }
     );
     throws(function() {
-      Filters[name]('field')(666);
+      Filter[name]('field')(666);
     });
   });
 });
 
-QUnit.test('Filters.Or', function() {
+QUnit.test('Filter.Or', function() {
   deepEqual(
-    Filters.Or([
-      Filters.Eq('field1')(2),
-      Filters.Eq('field2')(3),
+    Filter.Or([
+      Filter.Eq('field1')(2),
+      Filter.Eq('field2')(3),
     ])(), {
       $or: [{
         field1: 2,
@@ -63,9 +63,9 @@ QUnit.test('Filters.Or', function() {
     }
   );
   deepEqual(
-    Filters.Or({
-      f1: Filters.Eq('field1'),
-      f2: Filters.Eq('field2'),
+    Filter.Or({
+      f1: Filter.Eq('field1'),
+      f2: Filter.Eq('field2'),
     })({
       f1: 2,
       f2: 3
@@ -78,8 +78,8 @@ QUnit.test('Filters.Or', function() {
     }
   );
   deepEqual(
-    Filters.Or({
-      f1: Filters.Eq('field1')
+    Filter.Or({
+      f1: Filter.Eq('field1')
     })({
       f1: 2
     }), {
@@ -87,24 +87,24 @@ QUnit.test('Filters.Or', function() {
     }
   );
   throws(function() {
-    Filters.Or('field')(666);
+    Filter.Or('field')(666);
   });
 });
 
-QUnit.test('Filters.And', function() {
+QUnit.test('Filter.And', function() {
   deepEqual(
-    Filters.And([
-      Filters.Eq('field1')(2),
-      Filters.Eq('field2')(3),
+    Filter.And([
+      Filter.Eq('field1')(2),
+      Filter.Eq('field2')(3),
     ])(), {
       field1: 2,
       field2: 3
     }
   );
   deepEqual(
-    Filters.And({
-      f1: Filters.Eq('field1'),
-      f2: Filters.Eq('field2'),
+    Filter.And({
+      f1: Filter.Eq('field1'),
+      f2: Filter.Eq('field2'),
     })({
       f1: 2,
       f2: 3
@@ -114,9 +114,9 @@ QUnit.test('Filters.And', function() {
     }
   );
   deepEqual(
-    Filters.And({
-      f1: Filters.Eq('field1'),
-      f2: Filters.Eq('field1'),
+    Filter.And({
+      f1: Filter.Eq('field1'),
+      f2: Filter.Eq('field1'),
     })({
       f1: 2,
       f2: 3
@@ -128,13 +128,13 @@ QUnit.test('Filters.And', function() {
     }
   );
   throws(function() {
-    Filters.And('field')(666);
+    Filter.And('field')(666);
   });
 });
 
-QUnit.test('Filters.Not', function() {
+QUnit.test('Filter.Not', function() {
   deepEqual(
-    Filters.Not(Filters.Eq('field'))(3), {
+    Filter.Not(Filter.Eq('field'))(3), {
       field: {
         $not: {
           $eq: 3
@@ -143,7 +143,7 @@ QUnit.test('Filters.Not', function() {
     }
   );
   deepEqual(
-    Filters.Not(function() {
+    Filter.Not(function() {
       return {
         field: {
           $regex: 'x',
@@ -157,7 +157,7 @@ QUnit.test('Filters.Not', function() {
     }
   );
   deepEqual(
-    Filters.Not(function() {
+    Filter.Not(function() {
       return {
         field: {
           $regex: /x/g
@@ -170,7 +170,7 @@ QUnit.test('Filters.Not', function() {
     }
   );
   deepEqual(
-    Filters.Not(function() {
+    Filter.Not(function() {
       return {
         field: {
           $regex: /x/i,
@@ -185,11 +185,11 @@ QUnit.test('Filters.Not', function() {
   );
 });
 
-QUnit.test('Filters.Nor', function() {
+QUnit.test('Filter.Nor', function() {
   deepEqual(
-    Filters.Nor([
-      Filters.Eq('field1')(2),
-      Filters.Eq('field2')(3),
+    Filter.Nor([
+      Filter.Eq('field1')(2),
+      Filter.Eq('field2')(3),
     ])(), {
       $nor: [{
         field1: 2,
@@ -199,9 +199,9 @@ QUnit.test('Filters.Nor', function() {
     }
   );
   deepEqual(
-    Filters.Nor({
-      f1: Filters.Eq('field1'),
-      f2: Filters.Eq('field2'),
+    Filter.Nor({
+      f1: Filter.Eq('field1'),
+      f2: Filter.Eq('field2'),
     })({
       f1: 2,
       f2: 3
@@ -214,20 +214,20 @@ QUnit.test('Filters.Nor', function() {
     }
   );
   throws(function() {
-    Filters.Nor('field')(666);
+    Filter.Nor('field')(666);
   });
 });
 
-QUnit.test('Filters.Exists', function() {
+QUnit.test('Filter.Exists', function() {
   deepEqual(
-    Filters.Exists('field')(), {
+    Filter.Exists('field')(), {
       field: {
         $exists: true
       }
     }
   );
   deepEqual(
-    Filters.Exists('field')(false), {
+    Filter.Exists('field')(false), {
       field: {
         $exists: false
       }
@@ -235,24 +235,24 @@ QUnit.test('Filters.Exists', function() {
   );
 });
 
-QUnit.test('Filters.Type', function() {
+QUnit.test('Filter.Type', function() {
   deepEqual(
-    Filters.Type('field', 3)(), {
+    Filter.Type('field', 3)(), {
       field: {
         $type: 3
       }
     }
   );
   throws(function() {
-    Filters.Type('field')('wibble');
+    Filter.Type('field')('wibble');
   });
 });
 
 
 
-QUnit.test('Filters.Mod', function() {
+QUnit.test('Filter.Mod', function() {
   deepEqual(
-    Filters.Mod('field')({
+    Filter.Mod('field')({
       divisor: 5,
       remainder: 3
     }), {
@@ -262,10 +262,10 @@ QUnit.test('Filters.Mod', function() {
     }
   );
   throws(function() {
-    Filters.Mod('field')('wibble');
+    Filter.Mod('field')('wibble');
   });
   throws(function() {
-    Filters.Mod('field')({
+    Filter.Mod('field')({
       divisor: 'wibble',
       remainder: 3
     });
@@ -273,54 +273,54 @@ QUnit.test('Filters.Mod', function() {
 });
 
 
-QUnit.test('Filters.Regex', function() {
+QUnit.test('Filter.Regex', function() {
   deepEqual(
-    Filters.Regex('field', /x/)(), {
+    Filter.Regex('field', /x/)(), {
       field: /x/,
     }
   );
   deepEqual(
-    Filters.Regex('field', 'x')(), {
+    Filter.Regex('field', 'x')(), {
       field: /x/
     }
   );
   deepEqual(
-    Filters.Regex('field', 3)(), {
+    Filter.Regex('field', 3)(), {
       field: /3/
     }
   );
   deepEqual(
-    Filters.Regex('field', /x/, 'i')(), {
+    Filter.Regex('field', /x/, 'i')(), {
       field: /x/i
     }
   );
   deepEqual(
-    Filters.Regex('field', 'x', 'i')(), {
+    Filter.Regex('field', 'x', 'i')(), {
       field: /x/i
     }
   );
   deepEqual(
-    Filters.Regex('field', 3, 'i')(), {
+    Filter.Regex('field', 3, 'i')(), {
       field: /3/i
     }
   );
   throws(function() {
-    Filters.Regex('field', {
+    Filter.Regex('field', {
       bad: 'value'
     })();
   });
 });
 
-QUnit.test('Filters.Text', function() {
+QUnit.test('Filter.Text', function() {
   deepEqual(
-    Filters.Text()('Hello World'), {
+    Filter.Text()('Hello World'), {
       $text: {
         $search: 'Hello World'
       }
     }
   );
   deepEqual(
-    Filters.Text('en')('Hello World'), {
+    Filter.Text('en')('Hello World'), {
       $text: {
         $search: 'Hello World',
         $language: 'en'
@@ -329,8 +329,8 @@ QUnit.test('Filters.Text', function() {
   );
 });
 
-QUnit.test('Filters.Where', function() {
-  var filter = Filters.Where(function(value) {
+QUnit.test('Filter.Where', function() {
+  var filter = Filter.Where(function(value) {
     return this.field === value;
   })(10);
 
@@ -344,22 +344,22 @@ QUnit.test('Filters.Where', function() {
   }));
 });
 
-QUnit.test('Filters.All', function() {
+QUnit.test('Filter.All', function() {
   deepEqual(
-    Filters.All('field')([2, 4, 6]), {
+    Filter.All('field')([2, 4, 6]), {
       field: {
         $all: [2, 4, 6]
       }
     }
   );
   throws(function() {
-    Filters.All('field')(666);
+    Filter.All('field')(666);
   });
 });
 
-QUnit.test('Filters.ElemMatch', function() {
+QUnit.test('Filter.ElemMatch', function() {
   deepEqual(
-    Filters.ElemMatch('field')({
+    Filter.ElemMatch('field')({
       $gt: 2,
       $lt: 4
     }), {
@@ -372,20 +372,20 @@ QUnit.test('Filters.ElemMatch', function() {
     }
   );
   throws(function() {
-    Filters.ElemMatch('field')('wibble');
+    Filter.ElemMatch('field')('wibble');
   });
 });
 
-QUnit.test('Filters.Size', function() {
+QUnit.test('Filter.Size', function() {
   deepEqual(
-    Filters.Size('field')(5), {
+    Filter.Size('field')(5), {
       field: {
         $size: 5
       }
     }
   );
   throws(function() {
-    Filters.Size('field')('wibble');
+    Filter.Size('field')('wibble');
   });
 });
 

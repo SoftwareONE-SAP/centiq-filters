@@ -1,4 +1,4 @@
-Filters = {};
+Filter = typeof Filter === 'undefined' ? {} : Filter;
 
 /**
  * Eq(field)(value)
@@ -7,7 +7,7 @@ Filters = {};
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/eq/
  */
-Filters.Eq = function EqFactory(field) {
+Filter.Eq = function EqFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Eq takes a single String argument');
   }
@@ -29,7 +29,7 @@ Filters.Eq = function EqFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gt/
  */
-Filters.Gt = function GtFactory(field) {
+Filter.Gt = function GtFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Gt takes a single String argument');
   }
@@ -55,7 +55,7 @@ Filters.Gt = function GtFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/gte/
  */
-Filters.Gte = function GteFactory(field) {
+Filter.Gte = function GteFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Gte takes a single String argument');
   }
@@ -81,7 +81,7 @@ Filters.Gte = function GteFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lt/
  */
-Filters.Lt = function LtFactory(field) {
+Filter.Lt = function LtFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Lt takes a single String argument');
   }
@@ -107,7 +107,7 @@ Filters.Lt = function LtFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/lte/
  */
-Filters.Lte = function LteFactory(field) {
+Filter.Lte = function LteFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Lte takes a single String argument');
   }
@@ -133,7 +133,7 @@ Filters.Lte = function LteFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/in/
  */
-Filters.In = function InFactory(field) {
+Filter.In = function InFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('In takes a single String argument');
   }
@@ -156,7 +156,7 @@ Filters.In = function InFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nin/
  */
-Filters.Nin = function NinFactory(field) {
+Filter.Nin = function NinFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Nin takes a single String argument');
   }
@@ -183,7 +183,7 @@ Filters.Nin = function NinFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/or/
  */
-Filters.Or = function OrFactory(filters) {
+Filter.Or = function OrFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('Or takes a single Object argument');
   }
@@ -223,7 +223,7 @@ Filters.Or = function OrFactory(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/and/
  */
-Filters.And = function AndFactory(filters) {
+Filter.And = function AndFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('And takes a single Object argument');
   }
@@ -259,7 +259,7 @@ Filters.And = function AndFactory(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/not/
  */
-Filters.Not = function NotFactory(func) {
+Filter.Not = function NotFactory(func) {
   if (arguments.length !== 1 || typeof func !== 'function') {
     throw new Error('Eq takes a single Function argument');
   }
@@ -324,7 +324,7 @@ Filters.Not = function NotFactory(func) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/nor/
  */
-Filters.Nor = function NorFactory(filters) {
+Filter.Nor = function NorFactory(filters) {
   if (arguments.length !== 1 || typeof filters !== 'object') {
     throw new Error('Nor takes a single Object argument');
   }
@@ -359,7 +359,7 @@ Filters.Nor = function NorFactory(filters) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/exists/
  */
-Filters.Exists = function ExistsFactory(field) {
+Filter.Exists = function ExistsFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Exists takes a single String argument');
   }
@@ -380,7 +380,7 @@ Filters.Exists = function ExistsFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/type/
  */
-Filters.Type = function TypeFactory(field, value) {
+Filter.Type = function TypeFactory(field, value) {
   if (arguments.length !== 2 || typeof field !== 'string' || typeof value !== 'number' || isNaN(value)) {
     throw new Error('Type takes a String argument followed by a number');
   }
@@ -400,7 +400,7 @@ Filters.Type = function TypeFactory(field, value) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/mod/
  */
-Filters.Mod = function ModFactory(field) {
+Filter.Mod = function ModFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Mod takes a single String argument');
   }
@@ -435,7 +435,7 @@ Filters.Mod = function ModFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/regex/
  */
-Filters.Regex = function RegexFactory(field, regex, options) {
+Filter.Regex = function RegexFactory(field, regex, options) {
   if (typeof field !== 'string'
     || (typeof regex   !== 'string'    && typeof regex !== 'number' && !(regex instanceof RegExp) )
     || (typeof options !== 'undefined' && typeof options !== 'string' && options !== null)
@@ -462,7 +462,7 @@ Filters.Regex = function RegexFactory(field, regex, options) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/text/
  */
-Filters.Text = function TextFactory(language) {
+Filter.Text = function TextFactory(language) {
   if (arguments.length > 1 || (typeof language !== 'string' && typeof language !== 'undefined' && language !== null)) {
     throw new Error('Text takes a single optional String argument');
   }
@@ -493,7 +493,7 @@ Filters.Text = function TextFactory(language) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/where/
  */
-Filters.Where = function WhereFactory(func) {
+Filter.Where = function WhereFactory(func) {
   if (arguments.length !== 1 || (typeof func !== 'string' && typeof func !== 'function')) {
     throw new Error('Where takes a single String or Function argument');
   }
@@ -520,7 +520,7 @@ Filters.Where = function WhereFactory(func) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/all/
  */
-Filters.All = function AllFactory(field) {
+Filter.All = function AllFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('All takes a single String argument');
   }
@@ -543,7 +543,7 @@ Filters.All = function AllFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/elemMatch/
  */
-Filters.ElemMatch = function ElemMatchFactory(field) {
+Filter.ElemMatch = function ElemMatchFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('ElemMatch takes a single String argument');
   }
@@ -566,7 +566,7 @@ Filters.ElemMatch = function ElemMatchFactory(field) {
  *
  * https://docs.mongodb.org/v3.0/reference/operator/query/size/
  */
-Filters.Size = function SizeFactory(field) {
+Filter.Size = function SizeFactory(field) {
   if (arguments.length !== 1 || typeof field !== 'string') {
     throw new Error('Size takes a single String argument');
   }
