@@ -448,7 +448,10 @@ Filter.Regex = function RegexFactory(field, regex, options) {
     $options: options,
   });
 
-  return function Regex(value) {
+  return function Regex() {
+    if (arguments.length) {
+      throw new Error("Regex filter does not take arguments");
+    }
     var selector = {};
     selector[field] = regex;
     return selector;
