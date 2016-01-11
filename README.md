@@ -316,21 +316,19 @@ To get the mongo query:
 var mongoQuery = filter.query();
 ```
 
-## Events
+## Reactivity
 
-Filter classes use [EventEmitter](https://nodejs.org/api/events.html). Whenever a filter value is changed, a "change" event is emitted. This might be caused by a "set", "unset", "enable", "disable", "clear" or "reset", but will only be triggered when an operation causes the result of a "save" or "query" to be different.
+The `save` and `query` functions are reactive. So if you do this:
 
 ```javascript
-1. var filter = new ProductFilter({ MinPrice: 3 });
-2. filter.on('change', function(){
-     console.log("Mongo query is now", filter.query());
-   });
-3. filter.set({ MinPrice: 2 });
-4. filter.set({ MinPrice: 2 });
-5. filter.reset();
+var filter = new ProductFilter({ MinPrice: 3 });
+
+Tracker.autorun(function(){
+  console.log("Filter query:", filter.query());
+});
 ```
 
-In the above example, the mongo query is logged to the console after lines 3 and 5. It is not logged at line 1, because it only happens when the filter has changed, not whilst it is being created (also the event handler hasn't been attached at this point). It is not logged at line 4 because the underlying data didn't change.
+The filter query will be printed to the console immediately, *and* whenever it is changed. If you call set/reset/clear and nothing actually changes, then it should not re-run. I.e, if you call `filter.set({ foo: 123 })` twice in a row, the autorun function will only be executed once.
 
 ## Filter Factories
 

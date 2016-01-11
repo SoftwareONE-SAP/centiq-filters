@@ -42,7 +42,6 @@ Filter.create = function FilterCreateSpec(spec) {
       status: true,
       changed: false,
     };
-    EventEmitter.call(this);
     if (set) {
       Object.keys(set).forEach(function(k){
         this._reset[k] = {
@@ -53,7 +52,6 @@ Filter.create = function FilterCreateSpec(spec) {
       this.set(set);
     }
   };
-  inherits(filter, EventEmitter);
 
   /**
    * Returns a list of names from the filter spec. They are
@@ -286,6 +284,8 @@ Filter.create = function FilterCreateSpec(spec) {
    * @return {Object} All of the filters currently set keys/values
    */
   filter.prototype.save = function save() {
+    this._tracker().depend();
+
     var save = {};
     Object.keys(this._data).forEach(function(k) {
       if (this._data[k].enabled) {
@@ -303,6 +303,8 @@ Filter.create = function FilterCreateSpec(spec) {
    * @return {Object}       The mongo query
    */
   filter.prototype.query = function query(query) {
+    this._tracker().depend();
+
     var queries = [];
 
     if (query) queries.push(query);
@@ -329,9 +331,19 @@ Filter.create = function FilterCreateSpec(spec) {
     };
   };
 
+  /**
+   * Lazy load a Tracker.Depenency
+   */
+  filter.prototype._tracker = function () {
+    if (!this.hasOwnProperty('_dependency')) {
+      this._dependency = new Tracker.Dependency();
+    }
+    return this._dependency;
+  },
+
   filter.prototype._emitChange = function _emitChange() {
     if (this._emit_changes.status) {
-      this.emit('change');
+      this._tracker().changed();
     }
     this._emit_changes.changed = true;
   };
@@ -345,44 +357,9 @@ Filter.create = function FilterCreateSpec(spec) {
 
   filter.prototype._restartEmittingChanges = function _restartEmittingChanges() {
     if (this._emit_changes.status) return;
-    if (this._emit_changes.changed) {
-      this.emit('change');
-    }
-    this._emit_changes = {
-      status:  true,
-      changed: false,
-    };
+    this._emit_changes.status = true;
+    this._emitChange();
   };
 
   return filter;
 };
-
-/**
- * A function for client+server side inheritance. Logic stolen from
- * MeteorSpark:util
- */
-var inherits = (function () {
-  if (Meteor.isServer) {
-    return Npm.require('util').inherits;
-  } else if (typeof Object.create === 'function') {
-    return function (ctor, superCtor) {
-      ctor.super_ = superCtor
-      ctor.prototype = Object.create(superCtor.prototype, {
-        constructor: {
-          value: ctor,
-          enumerable: false,
-          writable: true,
-          configurable: true
-        }
-      });
-    };
-  } else {
-    return function (ctor, superCtor) {
-      ctor.super_ = superCtor
-      var TempCtor = function () {}
-      TempCtor.prototype = superCtor.prototype
-      ctor.prototype = new TempCtor()
-      ctor.prototype.constructor = ctor
-    };
-  }
-})();

@@ -15,7 +15,6 @@ Package.onUse(function(api) {
 
   api.use([
     'ejson',
-    'raix:eventemitter',
   ]);
 
   api.addFiles([
