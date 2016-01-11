@@ -49,7 +49,7 @@ Filter.create = function FilterCreateSpec(spec) {
    *
    * If name is not supplied, returns all meta data.
    */
-  filter.meta = function meta(name) {
+  filter.meta = filter.prototype.meta = function meta(name) {
     if (typeof name === 'undefined') {
       var meta = {};
       Object.keys(spec).forEach(function(name) {
