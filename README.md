@@ -200,6 +200,34 @@ ProductFilter.meta('MinPrice') ==
 }
 ```
 
+Another optional item you can pass is `beforeSet`. This is a `function`
+which takes the value being set and can run arbitrary tasks before the set happens. It can also optionally change the value being set. For
+example
+
+```javascript
+var ProductFilter = Filter.create({
+  MinPrice: {
+    filter: CustomFilter('price'),
+    beforeSet: function (value, callback) {
+      var low = ProductFilter.meta('MinPrice').low;
+      if (value < low) {
+        callback(low);
+      }
+    }
+  }
+});
+```
+
+You don't have to run the callback to change the value, but if you do want to do that, it must happen immediately during the same event loop tick. I.e, this wouldn't work:
+
+```javascript
+if (value < low) {
+  setTimeout(function(){
+    callback(low);
+  }, 1);
+}
+```
+
 Now we have ProductFilter, we want to create an instance of it which we can set values for MinPrice on.
 
 ```javascript

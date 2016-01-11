@@ -25,6 +25,10 @@ Filter.create = function FilterCreateSpec(spec) {
   var filter = function Filter(set) {
     this._data = {};
     this._reset = {};
+    this._emit_changes = {
+      status: true,
+      changed: false,
+    };
     EventEmitter.call(this);
     if (set) {
       Object.keys(set).forEach(function(k){
@@ -84,7 +88,7 @@ Filter.create = function FilterCreateSpec(spec) {
       to = this._data;
     }
 
-    if (!EJSON.equals(from, to)) this.emit('change');
+    if (!EJSON.equals(from, to)) this._emitChange();
   };
 
   /**
@@ -104,7 +108,7 @@ Filter.create = function FilterCreateSpec(spec) {
       }.bind(this));
     }.bind(this));
 
-    if (changed) this.emit('change');
+    if (changed) this._emitChange();
     return this;
   };
 
@@ -132,7 +136,7 @@ Filter.create = function FilterCreateSpec(spec) {
       to = this._data;
     }
 
-    if (!EJSON.equals(from, to)) this.emit('change');
+    if (!EJSON.equals(from, to)) this._emitChange();
   };
 
   /**
@@ -159,12 +163,20 @@ Filter.create = function FilterCreateSpec(spec) {
       items[arguments[0]] = arguments[1];
     }
 
+    this._stopEmittingChanges();
+
     var changed = false;
     Object.keys(items).forEach(function(key) {
       var value = items[key];
 
       if (!spec.hasOwnProperty(key)) {
         throw new Error("There is no filter spec for " + key);
+      }
+
+      if (spec[key].hasOwnProperty('beforeSet')) {
+        spec[key].beforeSet.call(this, value, function(newValue){
+          value = newValue;
+        });
       }
 
       if (this._data.hasOwnProperty(key)) {
@@ -186,9 +198,12 @@ Filter.create = function FilterCreateSpec(spec) {
        * triggering a throw now, rather than at query build time.
        */
       spec[key].filter(this._data[key].value);
+
     }.bind(this));
 
-    if (changed) this.emit('change');
+    if (changed) this._emitChange();
+
+    this._restartEmittingChanges();
 
     return this;
   };
@@ -217,7 +232,7 @@ Filter.create = function FilterCreateSpec(spec) {
       }.bind(this));
     }.bind(this));
 
-    if (changed) this.emit('change');
+    if (changed) this._emitChange();
     return this;
   };
 
@@ -237,7 +252,7 @@ Filter.create = function FilterCreateSpec(spec) {
        }.bind(this));
      }.bind(this));
 
-     if (changed) this.emit('change');
+     if (changed) this._emitChange();
      return this;
    };
 
@@ -289,6 +304,31 @@ Filter.create = function FilterCreateSpec(spec) {
 
     return compact ? compact : {
       $and: queries
+    };
+  };
+
+  filter.prototype._emitChange = function _emitChange() {
+    if (this._emit_changes.status) {
+      this.emit('change');
+    }
+    this._emit_changes.changed = true;
+  };
+
+  filter.prototype._stopEmittingChanges = function _stopEmittingChanges() {
+    this._emit_changes = {
+      status:  false,
+      changed: false,
+    };
+  };
+
+  filter.prototype._restartEmittingChanges = function _restartEmittingChanges() {
+    if (this._emit_changes.status) return;
+    if (this._emit_changes.changed) {
+      this.emit('change');
+    }
+    this._emit_changes = {
+      status:  true,
+      changed: false,
     };
   };
 
