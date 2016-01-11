@@ -144,9 +144,17 @@ var ProductFilter = Filter.create({
     filter: Filter.Gte('price')
   }
 });
+
+var ProductFilter = Filter.create([
+  {
+    MinPrice: Filter.Gte('price')
+  }
+]);
 ```
 
-The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. Here we store information about a "template" that we might want to use to let the user select what min-price to filter on:
+The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. The third version uses an Array. The only purpose of this is so we can recover the order that the filters were defined in when calling `ProductFilter.names()`.
+
+Here we store some meta data information about a "template" that we might want to use to let the user select what min-price to filter on:
 
 ```javascript
 var ProductFilter = Filter.create({
@@ -227,6 +235,21 @@ if (value < low) {
   }, 1);
 }
 ```
+
+You can call the `names` function on either the ProductFilter class or an instance of it in order to get a list of names of filters which are available. If you passed the Filter spec as an Array, then the values will be returned in the same order. For example:
+
+```javascript
+var ProductFilter = Filter.create([
+  { First:  ... },
+  { Second: ... },
+]);
+var filter = new ProductFilter();
+
+ProductFilter.names() == ['First', 'Second'];
+filter.names() == ['First', 'Second'];
+```
+
+If we hadn't used Array syntax when creating the ProductFilter class, then the returned Array may have been `['Second', 'First']`
 
 Now we have ProductFilter, we want to create an instance of it which we can set values for MinPrice on.
 

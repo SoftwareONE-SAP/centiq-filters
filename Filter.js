@@ -6,6 +6,19 @@ Filter = typeof Filter === 'undefined' ? {} : Filter;
 
 Filter.create = function FilterCreateSpec(spec) {
 
+  var names = [];
+  if (Array.isArray(spec)) {
+    spec = spec.reduce(function(o, item){
+      Object.keys(item).forEach(function(k){
+        o[ k ] = item[ k ];
+        names.push(k);
+      });
+      return o;
+    }, {});
+  } else {
+    names = Object.keys(spec);
+  }
+
   /**
    * Convert compact format { foo: function }
    * to advanced format:    { foo: { filter: function } }
@@ -41,6 +54,15 @@ Filter.create = function FilterCreateSpec(spec) {
     }
   };
   inherits(filter, EventEmitter);
+
+  /**
+   * Returns a list of names from the filter spec. They are
+   * ordered in the same way they were passed if an Array was
+   * passed
+   */
+  filter.names = filter.prototype.names = function () {
+    return [].concat(names);
+  };
 
   /**
    * Returns meta data from the spec.
