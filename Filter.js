@@ -273,7 +273,7 @@ Filter.create = function FilterCreateSpec(spec) {
     Object.keys(spec).forEach(function(key) {
       if (!this._data.hasOwnProperty(key)) return;
       if (this._data[key].enabled) {
-        var query = spec[key].filter(this._data[key].value);
+        var query = spec[key].filter.call(this, this._data[key].value);
         queries.push(query);
       }
     }.bind(this));
