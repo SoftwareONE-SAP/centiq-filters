@@ -60,9 +60,10 @@ Filter.create = function FilterCreateSpec(spec) {
   var filter = function Filter(set) {
     this._data = {};
     this._reset = {};
-    this._emit_changes = {
-      status: true,
-      changed: false,
+    this._tracking = {
+      paused:   0,
+      queue:    {},
+      trackers: {},
     };
     if (set) {
       Object.keys(set).forEach(function(k){
@@ -117,20 +118,28 @@ Filter.create = function FilterCreateSpec(spec) {
       set[arguments[0]] = arguments[1];
     }
 
-    var from   = this._data;
-    var to     = this._reset;
-    this._data = EJSON.clone(to);
-
+    var from = EJSON.clone(this._data);
+    var to   = EJSON.clone(this._reset);
     if (set) {
-      // Temporarily disable emit so a change event isn't triggered
-      var emit = this.emit;
-      this.emit = function(){};
-      this.set(set);
-      this.emit = emit;
-      to = this._data;
+      Object.keys(set).forEach(function(k){
+        to[k] = EJSON.clone(set[k]);
+      });
     }
 
-    if (!EJSON.equals(from, to)) this._emitChange();
+    this._pauseTracking();
+
+    Object.keys(to).forEach(function(k){
+      this.set(k, to[k]);
+    }.bind(this));
+
+    Object.keys(from).forEach(function(k){
+      if (to.hasOwnProperty(k)) return;
+      this.unset(k);
+    }.bind(this));
+
+    this._continueTracking();
+
+    return this;
   };
 
   /**
@@ -138,7 +147,7 @@ Filter.create = function FilterCreateSpec(spec) {
    * @param {String} k The key of the filter value to remove
    */
   filter.prototype.unset = function unset() {
-    var changed = false;
+    this._pauseTracking();
 
     Array.prototype.slice.call(arguments).forEach(function(arg) {
       if (!Array.isArray(arg)) arg = [arg];
@@ -147,13 +156,14 @@ Filter.create = function FilterCreateSpec(spec) {
           if (spec[k].hasOwnProperty('beforeUnset')) {
             spec[k].beforeUnset.call({ name: k, filter: this });
           }
-          changed = true;
           delete this._data[k];
+          this._trackChanged(k);
         }
       }.bind(this));
     }.bind(this));
 
-    if (changed) this._emitChange();
+    this._continueTracking();
+
     return this;
   };
 
@@ -168,27 +178,25 @@ Filter.create = function FilterCreateSpec(spec) {
       set[arguments[0]] = arguments[1];
     }
 
-    var from   = this._data;
-    var to     = {};
-    this._data = to;
+    this._pauseTracking();
+    Object.keys(this._data).forEach(function(k){
+      if (set.hasOwnProperty(k)) {
+        this.set(k, set[k]);
+      } else {
+        this.unset(k);
+      }
+    }).bind(this);
 
-    if (set) {
-      // Temporarily disable emit so a change event isn't triggered
-      var emit = this.emit;
-      this.emit = function(){};
-      this.set(set);
-      this.emit = emit;
-      to = this._data;
-    }
+    this._continueTracking();
 
-    if (!EJSON.equals(from, to)) this._emitChange();
+    return this;
   };
 
   /**
    * Retrieve a saved filter value
    */
-  filter.prototype.get = function get(name) {
-    this._tracker().depend();
+  filter.prototype.get = function get(name, reactivity) {
+    if (reactivity !== false) this._trackDepend(name);
     if (!this._data.hasOwnProperty(name)) return undefined;
     return EJSON.clone(this._data[ name ].value);
   },
@@ -209,9 +217,8 @@ Filter.create = function FilterCreateSpec(spec) {
       items[arguments[0]] = arguments[1];
     }
 
-    this._stopEmittingChanges();
+    this._pauseTracking();
 
-    var changed = false;
     Object.keys(items).forEach(function(key) {
       var value = items[key];
 
@@ -225,23 +232,22 @@ Filter.create = function FilterCreateSpec(spec) {
         });
       }
 
-      if (this._data.hasOwnProperty(key)) {
-        if (!EJSON.equals(this._data[key].value, value)) {
-          changed = true;
-        }
-      } else {
-        changed = true;
+      if (!this._data.hasOwnProperty(key)) {
         this._data[key] = {
           enabled: true
         };
       }
 
+      // No change?
+      if (EJSON.equals(this._data[key].value, value)) return;
+
       this._data[key].value = EJSON.clone(value);
+      this._trackChanged(key);
+      changed = true;
 
       /**
-       * Although we don't need to call the filter function here,
-       * we will do so in case the data passed was invalid,
-       * triggering a throw now, rather than at query build time.
+       * Call filter function here so it throws if something invalid
+       * was supplied.
        */
       spec[key].filter.call({
         name:   key,
@@ -250,9 +256,7 @@ Filter.create = function FilterCreateSpec(spec) {
 
     }.bind(this));
 
-    if (changed) this._emitChange();
-
-    this._restartEmittingChanges();
+    this._continueTracking();
 
     return this;
   };
@@ -260,10 +264,8 @@ Filter.create = function FilterCreateSpec(spec) {
   /**
    * Return if a particular filter is enabled
    */
-  filter.prototype.enabled = function enabled(name) {
-    // @todo - we should probably have name specific trackers
-    // rather than a single global one.
-    this._tracker().depend();
+  filter.prototype.enabled = function enabled(name, reactivity) {
+    if (reactivity !== false) this._trackDepend(name);
     if (!this._data.hasOwnProperty(name)) return false;
     return this._data[ name ].enabled;
   };
@@ -274,7 +276,7 @@ Filter.create = function FilterCreateSpec(spec) {
   filter.prototype.enable = function enable() {
     var changed = false;
 
-    this._stopEmittingChanges();
+    this._pauseTracking();
 
     Array.prototype.slice.call(arguments).forEach(function(arg) {
       if (!Array.isArray(arg)) arg = [arg];
@@ -287,13 +289,11 @@ Filter.create = function FilterCreateSpec(spec) {
         }
 
         this._data[k].enabled = true;
-        changed = true;
+        this._trackChanged(k);
       }.bind(this));
     }.bind(this));
 
-    if (changed) this._emitChange();
-
-    this._restartEmittingChanges();
+    this._continueTracking();
 
     return this;
   };
@@ -302,28 +302,25 @@ Filter.create = function FilterCreateSpec(spec) {
    * Disable an enabled filter value
    */
    filter.prototype.disable = function disable() {
-     var changed = false;
 
-     this._stopEmittingChanges();
+     this._pauseTracking();
 
      Array.prototype.slice.call(arguments).forEach(function(arg) {
        if (!Array.isArray(arg)) arg = [arg];
        arg.forEach(function(k) {
-         if (!this._data[k] || !this._data[k].enabled) return;
+         if (!(this._data[k] && this._data[k].enabled)) return;
 
          if (spec[k].hasOwnProperty('beforeDisable')) {
            spec[k].beforeDisable.call({ name: k, filter: this });
-           if (!this._data[k] || !this._data[k].enabled) return;
+           if (!(this._data[k] && this._data[k].enabled)) return;
          }
 
          this._data[k].enabled = false;
-         changed = true;
+         this._trackChanged(k);
        }.bind(this));
      }.bind(this));
 
-     if (changed) this._emitChange();
-
-     this._restartEmittingChanges();
+     this._continueTracking();
 
      return this;
    };
@@ -335,8 +332,8 @@ Filter.create = function FilterCreateSpec(spec) {
    *
    * @return {Object} All of the filters currently set keys/values
    */
-  filter.prototype.save = function save() {
-    this._tracker().depend();
+  filter.prototype.save = function save(reactivity) {
+    if (reactivity !== false) this._trackDepend();
 
     var save = {};
     Object.keys(this._data).forEach(function(k) {
@@ -354,8 +351,8 @@ Filter.create = function FilterCreateSpec(spec) {
    * @param  {Object} query Optional query to merge in
    * @return {Object}       The mongo query
    */
-  filter.prototype.query = function query(query) {
-    this._tracker().depend();
+  filter.prototype.query = function query(query, reactivity) {
+    if (reactivity !== false) this._trackDepend();
 
     var queries = [];
 
@@ -386,34 +383,35 @@ Filter.create = function FilterCreateSpec(spec) {
     };
   };
 
-  /**
-   * Lazy load a Tracker.Depenency
-   */
-  filter.prototype._tracker = function () {
-    if (!this.hasOwnProperty('_dependency')) {
-      this._dependency = new Tracker.Dependency();
-    }
-    return this._dependency;
-  },
-
-  filter.prototype._emitChange = function _emitChange() {
-    if (this._emit_changes.status) {
-      this._tracker().changed();
-    }
-    this._emit_changes.changed = true;
+  filter.prototype._pauseTracking = function _pauseTracking () {
+    ++this._tracking.paused;
   };
 
-  filter.prototype._stopEmittingChanges = function _stopEmittingChanges() {
-    this._emit_changes = {
-      status:  false,
-      changed: false,
-    };
+  filter.prototype._continueTracking = function _continueTracking () {
+    if (--this._tracking.paused > 0) return;
+    Object.keys(this._tracking.queue).forEach(function(name){
+      this._tracking.trackers[ name ].changed();
+      delete this._tracking.queue[ name ];
+    }.bind(this));
   };
 
-  filter.prototype._restartEmittingChanges = function _restartEmittingChanges() {
-    if (this._emit_changes.status) return;
-    this._emit_changes.status = true;
-    this._emitChange();
+  filter.prototype._trackDepend = function _trackDepend (name) {
+    if (typeof name === 'undefined') name = '...ROOT...';
+    if (!this._tracking.trackers.hasOwnProperty(name)) {
+      this._tracking.trackers[ name ] = new Tracker.Dependency();
+    }
+    this._tracking.trackers[ name ].depend();
+  };
+
+  filter.prototype._trackChanged = function _trackChanged (name) {
+    [ name, '...ROOT...'].forEach(function(name){
+      if (!this._tracking.trackers.hasOwnProperty(name)) return;
+      if (this._tracking.paused) {
+        this._tracking.queue[ name ] = true;
+      } else {
+        this._tracking.trackers[ name ].changed();
+      }
+    }.bind(this));
   };
 
   return filter;
