@@ -188,6 +188,7 @@ Filter.create = function FilterCreateSpec(spec) {
    * Retrieve a saved filter value
    */
   filter.prototype.get = function get(name) {
+    this._tracker().depend();
     if (!this._data.hasOwnProperty(name)) return undefined;
     return EJSON.clone(this._data[ name ].value);
   },
@@ -260,6 +261,9 @@ Filter.create = function FilterCreateSpec(spec) {
    * Return if a particular filter is enabled
    */
   filter.prototype.enabled = function enabled(name) {
+    // @todo - we should probably have name specific trackers
+    // rather than a single global one.
+    this._tracker().depend();
     if (!this._data.hasOwnProperty(name)) return false;
     return this._data[ name ].enabled;
   };

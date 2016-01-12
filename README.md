@@ -320,7 +320,7 @@ var mongoQuery = filter.query();
 
 ## Reactivity
 
-The `save` and `query` functions are reactive. So if you do this:
+The `save`, `query`, `get` and `enabled` functions are reactive. So if you do this:
 
 ```javascript
 var filter = new ProductFilter({ MinPrice: 3 });
@@ -330,7 +330,7 @@ Tracker.autorun(function(){
 });
 ```
 
-The filter query will be printed to the console immediately, *and* whenever it is changed. If you call set/reset/clear and nothing actually changes, then it should not re-run. I.e, if you call `filter.set({ foo: 123 })` twice in a row, the autorun function will only be executed once.
+The filter query will be printed to the console immediately, *and* whenever it is changed.
 
 ## Filter Factories
 
