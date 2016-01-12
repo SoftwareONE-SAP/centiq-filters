@@ -236,6 +236,8 @@ if (value < low) {
 }
 ```
 
+There are also similar `beforeUnset`, `beforeEnable` and `beforeDisable` functions. These are not passed any arguments at all. You can access `this.name` and `this.filter` from all four functions.
+
 You can call the `names` function on either the ProductFilter class or an instance of it in order to get a list of names of filters which are available. If you passed the Filter spec as an Array, then the values will be returned in the same order. For example:
 
 ```javascript

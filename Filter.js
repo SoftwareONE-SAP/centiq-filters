@@ -29,6 +29,28 @@ Filter.create = function FilterCreateSpec(spec) {
         filter: spec[k]
       };
     }
+
+    /**
+     * Handle "before" functions set on the function
+     */
+    [
+      'beforeEnable',
+      'beforeDisable',
+      'beforeSet',
+      'beforeUnset',
+    ].forEach(function(name){
+      if (typeof spec[k].filter[name] !== 'function') return;
+      var funcs = [ spec[k].filter[name] ];
+      delete spec[k].filter[name];
+      if (typeof spec[k][name] === 'function') {
+        funcs.push(spec[k][name]);
+      }
+      spec[k][name] = function () {
+        for (var i = 0; i < funcs.length; ++i) {
+          funcs[i].apply(this, arguments);
+        }
+      };
+    });
   });
 
   /**
@@ -122,6 +144,9 @@ Filter.create = function FilterCreateSpec(spec) {
       if (!Array.isArray(arg)) arg = [arg];
       arg.forEach(function(k) {
         if (this._data.hasOwnProperty(k)) {
+          if (spec[k].hasOwnProperty('beforeUnset')) {
+            spec[k].beforeUnset.call({ name: k, filter: this });
+          }
           changed = true;
           delete this._data[k];
         }
@@ -194,7 +219,7 @@ Filter.create = function FilterCreateSpec(spec) {
       }
 
       if (spec[key].hasOwnProperty('beforeSet')) {
-        spec[key].beforeSet.call(this, value, function(newValue){
+        spec[key].beforeSet.call({ name: key, filter: this }, value, function(newValue){
           value = newValue;
         });
       }
@@ -217,7 +242,10 @@ Filter.create = function FilterCreateSpec(spec) {
        * we will do so in case the data passed was invalid,
        * triggering a throw now, rather than at query build time.
        */
-      spec[key].filter(this._data[key].value);
+      spec[key].filter.call({
+        name:   key,
+        filter: this,
+      }, this._data[key].value);
 
     }.bind(this));
 
@@ -242,17 +270,27 @@ Filter.create = function FilterCreateSpec(spec) {
   filter.prototype.enable = function enable() {
     var changed = false;
 
+    this._stopEmittingChanges();
+
     Array.prototype.slice.call(arguments).forEach(function(arg) {
       if (!Array.isArray(arg)) arg = [arg];
       arg.forEach(function(k) {
-        if (!this._data.hasOwnProperty(k)) return;
-        if (this._data[k].enabled) return;
+        if (this._data[k] && this._data[k].enabled) return;
+
+        if (spec[k].hasOwnProperty('beforeEnable')) {
+          spec[k].beforeEnable.call({ name: k, filter: this });
+          if (this._data[k] && this._data[k].enabled) return;
+        }
+
         this._data[k].enabled = true;
         changed = true;
       }.bind(this));
     }.bind(this));
 
     if (changed) this._emitChange();
+
+    this._restartEmittingChanges();
+
     return this;
   };
 
@@ -262,17 +300,27 @@ Filter.create = function FilterCreateSpec(spec) {
    filter.prototype.disable = function disable() {
      var changed = false;
 
+     this._stopEmittingChanges();
+
      Array.prototype.slice.call(arguments).forEach(function(arg) {
        if (!Array.isArray(arg)) arg = [arg];
        arg.forEach(function(k) {
-         if (!this._data.hasOwnProperty(k)) return;
-         if (!this._data[k].enabled) return;
+         if (!this._data[k] || !this._data[k].enabled) return;
+
+         if (spec[k].hasOwnProperty('beforeDisable')) {
+           spec[k].beforeDisable.call({ name: k, filter: this });
+           if (!this._data[k] || !this._data[k].enabled) return;
+         }
+
          this._data[k].enabled = false;
          changed = true;
        }.bind(this));
      }.bind(this));
 
      if (changed) this._emitChange();
+
+     this._restartEmittingChanges();
+
      return this;
    };
 
@@ -312,7 +360,10 @@ Filter.create = function FilterCreateSpec(spec) {
     Object.keys(spec).forEach(function(key) {
       if (!this._data.hasOwnProperty(key)) return;
       if (this._data[key].enabled) {
-        var query = spec[key].filter.call(this, this._data[key].value);
+        var query = spec[key].filter.call({
+          name:   key,
+          filter: this
+        }, this._data[key].value);
         queries.push(query);
       }
     }.bind(this));
