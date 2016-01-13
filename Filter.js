@@ -180,12 +180,12 @@ Filter.create = function FilterCreateSpec(spec) {
 
     this._pauseTracking();
     Object.keys(this._data).forEach(function(k){
-      if (set.hasOwnProperty(k)) {
+      if (set && set.hasOwnProperty(k)) {
         this.set(k, set[k]);
       } else {
         this.unset(k);
       }
-    }).bind(this);
+    }.bind(this));
 
     this._continueTracking();
 
