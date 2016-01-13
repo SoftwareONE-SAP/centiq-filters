@@ -6,10 +6,6 @@ Package.describe({
   documentation: 'README.md'
 });
 
-Npm.depends({
-  util: '0.10.3',
-});
-
 Package.onUse(function(api) {
   api.versionsFrom('1.1.0.3');
 
