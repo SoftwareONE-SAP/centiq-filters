@@ -275,6 +275,21 @@ filter.unset('Multiple', 'Values');
 filter.unset(['Multiple', 'Values', 'In', 'An', 'Array']);
 ```
 
+To clone a filter object:
+
+```javascript
+var newFilter = filter.clone();
+```
+
+To automatically set new values to a cloned version of a filter, you can treat `clone` like `set`:
+
+```
+var filter = new ProductFilter({ MinPrice: 3 });
+var newFilter = filter.clone({ MaxPrice: 10 });
+```
+
+After running the above, newFilter would contain a filter with MinPrice set to 3 and MaxPrice set to 10.
+
 To clear all values:
 
 ```javascript

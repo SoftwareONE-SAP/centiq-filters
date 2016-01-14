@@ -383,6 +383,22 @@ Filter.create = function FilterCreateSpec(spec) {
     };
   };
 
+  filter.prototype.clone = function () {
+    var set = arguments[0];
+    if (arguments.length > 1) {
+      set = {};
+      set[arguments[0]] = arguments[1];
+    }
+
+    var f = new filter(this.save())
+
+    if (set) {
+      f.set(set);
+    }
+
+    return f;
+  };
+
   filter.prototype._pauseTracking = function _pauseTracking () {
     ++this._tracking.paused;
   };
