@@ -34,8 +34,6 @@ Filter.create = function FilterCreateSpec(spec) {
      * Handle "before" functions set on the function
      */
     [
-      'beforeEnable',
-      'beforeDisable',
       'beforeSet',
       'beforeUnset',
     ].forEach(function(name){
@@ -68,7 +66,6 @@ Filter.create = function FilterCreateSpec(spec) {
     if (set) {
       Object.keys(set).forEach(function(k){
         this._reset[k] = {
-          enabled: true,
           value: EJSON.clone(set[k])
         };
       }.bind(this));
@@ -233,9 +230,7 @@ Filter.create = function FilterCreateSpec(spec) {
       }
 
       if (!this._data.hasOwnProperty(key)) {
-        this._data[key] = {
-          enabled: true
-        };
+        this._data[key] = {};
       }
 
       // No change?
@@ -262,70 +257,6 @@ Filter.create = function FilterCreateSpec(spec) {
   };
 
   /**
-   * Return if a particular filter is enabled
-   */
-  filter.prototype.enabled = function enabled(name, reactivity) {
-    if (reactivity !== false) this._trackDepend(name);
-    if (!this._data.hasOwnProperty(name)) return false;
-    return this._data[ name ].enabled;
-  };
-
-  /**
-   * Enable a disabled filter value
-   */
-  filter.prototype.enable = function enable() {
-    var changed = false;
-
-    this._pauseTracking();
-
-    Array.prototype.slice.call(arguments).forEach(function(arg) {
-      if (!Array.isArray(arg)) arg = [arg];
-      arg.forEach(function(k) {
-        if (this._data[k] && this._data[k].enabled) return;
-
-        if (spec[k].hasOwnProperty('beforeEnable')) {
-          spec[k].beforeEnable.call({ name: k, filter: this });
-          if (this._data[k] && this._data[k].enabled) return;
-        }
-
-        this._data[k].enabled = true;
-        this._trackChanged(k);
-      }.bind(this));
-    }.bind(this));
-
-    this._continueTracking();
-
-    return this;
-  };
-
-  /**
-   * Disable an enabled filter value
-   */
-   filter.prototype.disable = function disable() {
-
-     this._pauseTracking();
-
-     Array.prototype.slice.call(arguments).forEach(function(arg) {
-       if (!Array.isArray(arg)) arg = [arg];
-       arg.forEach(function(k) {
-         if (!(this._data[k] && this._data[k].enabled)) return;
-
-         if (spec[k].hasOwnProperty('beforeDisable')) {
-           spec[k].beforeDisable.call({ name: k, filter: this });
-           if (!(this._data[k] && this._data[k].enabled)) return;
-         }
-
-         this._data[k].enabled = false;
-         this._trackChanged(k);
-       }.bind(this));
-     }.bind(this));
-
-     this._continueTracking();
-
-     return this;
-   };
-
-  /**
    * Returns a representation of this filters set values which can
    * be saved and used in the constructor when creating a new copy
    * of this filter.
@@ -337,7 +268,7 @@ Filter.create = function FilterCreateSpec(spec) {
 
     var save = {};
     Object.keys(this._data).forEach(function(k) {
-      if (this._data[k].enabled) {
+      if (this._data[k].hasOwnProperty('value')) {
         save[k] = EJSON.clone(this._data[k].value);
       }
     }.bind(this));
@@ -360,7 +291,7 @@ Filter.create = function FilterCreateSpec(spec) {
 
     Object.keys(spec).forEach(function(key) {
       if (!this._data.hasOwnProperty(key)) return;
-      if (this._data[key].enabled) {
+      if (this._data[key].hasOwnProperty('value')) {
         var query = spec[key].filter.call({
           name:   key,
           filter: this

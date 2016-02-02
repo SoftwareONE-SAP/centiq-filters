@@ -236,7 +236,7 @@ if (value < low) {
 }
 ```
 
-There are also similar `beforeUnset`, `beforeEnable` and `beforeDisable` functions. These are not passed any arguments at all. You can access `this.name` and `this.filter` from all four functions.
+There is also a similar `beforeUnset` function. This is not passed any arguments at all. You can access `this.name` and `this.filter`
 
 You can call the `names` function on either the ProductFilter class or an instance of it in order to get a list of names of filters which are available. If you passed the Filter spec as an Array, then the values will be returned in the same order. For example:
 
@@ -304,17 +304,6 @@ filter.reset();
 
 If any arguments are passed to `clear` or `reset`, they are proxied through to `set` after the `clear` or `reset` operation is performed. A call to these functions will only trigger a maximum of one `change` event, and only if the final result is different to the original.
 
-You can also disable a filter value rather than removing it. Then if you re-enable it, it will contain the previous value that it had. Note, disabled values don't appear when calling "save" or "query".
-
-```javascript
-filter.disable('MinPrice');
-filter.disable('Multiple', 'Values');
-filter.disable(['Multiple', 'Values', 'In', 'An', 'Array']);
-filter.enable('MinPrice');
-filter.enable('Multiple', 'Values');
-filter.enable(['Multiple', 'Values', 'In', 'An', 'Array']);
-```
-
 To get the data which has been set on the filter:
 
 ```javascript
@@ -335,7 +324,7 @@ var mongoQuery = filter.query();
 
 ## Reactivity
 
-The `save`, `query`, `get` and `enabled` functions are reactive. So if you do this:
+The `save`, `query` and `get` functions are reactive. So if you do this:
 
 ```javascript
 var filter = new ProductFilter({ MinPrice: 3 });
