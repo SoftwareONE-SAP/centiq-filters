@@ -1,7 +1,5 @@
 # Meteor Filters
 
-**WARNING** - This is a very new library and is currently in heavily active development and its API will definitely change in various backwards incompatible ways. I will remove this warning when it stabilises. Use at your own risk.
-
 We need a way to let a user specify the content of a Mongo query, for filtering purposes. For example, when displaying a list of products to a user, they might want to filter by price and when the product was added:
 
 ```javascript
