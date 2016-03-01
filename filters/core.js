@@ -23,6 +23,28 @@ Filter.Eq = function EqFactory(field) {
 };
 
 /**
+ * Ne(field)(value)
+ *
+ * { field: { $ne: value } }
+ *
+ * https://docs.mongodb.org/v3.0/reference/operator/query/ne/
+ */
+Filter.Ne = function NeFactory(field) {
+  if (arguments.length !== 1 || typeof field !== 'string') {
+    throw new Error('Ne takes a single String argument');
+  }
+  return function Ne(value) {
+    if (value !== null && typeof value !== 'string' && typeof value !==
+      'number') {
+      throw new Error('Invalid value passed to Ne for ' + field);
+    }
+    var selector = {};
+    selector[field] = { $ne: value };
+    return selector;
+  };
+};
+
+/**
  * Gt(field)(value)
  *
  * { field: { $gt: value } }
@@ -141,6 +163,11 @@ Filter.In = function InFactory(field) {
     if (!Array.isArray(values)) {
       throw new Error('Invalid value passed to In');
     }
+
+    if (values.length === 1) {
+      return Filter.Eq(field)(values[0]);
+    }
+
     var selector = {};
     selector[field] = {
       $in: values,
@@ -164,6 +191,11 @@ Filter.Nin = function NinFactory(field) {
     if (!Array.isArray(values)) {
       throw new Error('Invalid value passed to Nin');
     }
+
+    if (values.length === 1) {
+      return Filter.Ne(field)(values[0]);
+    }
+
     var selector = {};
     selector[field] = {
       $nin: values,

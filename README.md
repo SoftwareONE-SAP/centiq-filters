@@ -353,6 +353,23 @@ result == {
 };
 ```
 
+#### Filter.Ne
+
+A direct "not equals" comparison. [$eq](https://docs.mongodb.org/v3.0/reference/operator/query/ne/)
+
+|               | Type                 | Description |
+|---------------|----------------------|-------------|
+| Factory  arg1 | `String`             | Field name  |
+| Function arg1 | `String` or `Number` | Value       |
+
+```javascript
+var filter = Filter.Ne('price');
+var result = filter(3);
+result == {
+  'price': { $ne: 3 }
+};
+```
+
 #### Filter.Gt
 
 A "greater than" comparison.

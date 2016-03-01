@@ -11,6 +11,19 @@ QUnit.test('Filter.Eq', function() {
   });
 });
 
+QUnit.test('Filter.Ne', function() {
+  deepEqual(
+    Filter.Ne('field')(5), {
+      field: { $ne: 5 }
+    }
+  );
+  throws(function() {
+    Filter.Ne('field')({
+      bad: 'value'
+    })
+  });
+});
+
 ['gt', 'gte', 'lt', 'lte'].forEach(function(type) {
   var name = ucfirst(type);
   QUnit.test('Filter.' + name, function() {
