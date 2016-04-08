@@ -206,6 +206,30 @@ ProductFilter.meta('MinPrice') ==
 }
 ```
 
+"meta" is a setter as well as a getter. You can shallow-merge in additional meta data after the spec is created. For example:
+
+```javascript
+var ProductFilter = Filter.create({
+  MinPrice: CustomFilter('price')
+});
+ProductFilter.meta('MinPrice', {
+  bar: 789
+});
+```
+
+To set multiple values at once:
+
+```javascript
+var ProductFilter = Filter.create({
+  MinPrice: CustomFilter('price'),
+  MaxPrice: SomeOtherFilter('price'),
+});
+ProductFilter.meta({
+  MinPrice: { bar: 789 },
+  MaxPrice: { foo: 'abc' },
+});
+```
+
 Another optional item you can pass is `beforeSet`. This is a `function`
 which takes the value being set and can run arbitrary tasks before the set happens. It can also optionally change the value being set. For
 example

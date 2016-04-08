@@ -83,19 +83,39 @@ Filter.create = function FilterCreateSpec(spec) {
   };
 
   /**
-   * Returns meta data from the spec.
-   * @param  {String} name part of the spec to return meta data from
-   * @return {Object} The meta data
+   * Get or set meta data on the spec.
    *
-   * If name is not supplied, returns all meta data.
+   * If passed no arguments, will return all meta data.
+   *
+   * If passed a single String argument, will return the meta data
+   * for that particular filter.
+   *
+   * If passed a String and an Object, will do a shallow merge of the
+   * Object into the existing meta data for the filter matching that
+   * String.
+   *
+   * For merging in multiple meta data values, pass a single Object
+   * where filter name is the key and meta data as an Object to merge
+   * is the value.
    */
-  filter.meta = filter.prototype.meta = function meta(name) {
+  filter.meta = filter.prototype.meta = function meta(name, value) {
     if (typeof name === 'undefined') {
       var meta = {};
       Object.keys(spec).forEach(function(name) {
         meta[name] = filter.meta(name);
       });
       return meta;
+    } else if (typeof name === 'object') {
+      Object.keys(name).forEach(function(k){
+        filter.meta(k, name[k]);
+      });
+    } else if (typeof value === 'object') {
+      Object.keys(value).forEach(function(k){
+        if (!spec[name].filter.meta) {
+          spec[name].filter.meta = {};
+        }
+        spec[name].filter.meta[k] = value[k];
+      });
     } else {
       var meta = spec[name].filter.meta || {};
       if (spec[name].hasOwnProperty('meta')) {
