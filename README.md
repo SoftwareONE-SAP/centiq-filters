@@ -15,19 +15,21 @@ This Meteor package allows us to specify a "filter specification" containing inf
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: function (minPrice) {
-    return {
-      price: {
-        $gte: minPrice
-      }
-    };
-  },
-  AddedBefore: function (addedBefore) {
-    return {
-      added: {
-        $lt: addedBefore
-      }
-    };
+  filters: {
+    MinPrice: function (minPrice) {
+      return {
+        price: {
+          $gte: minPrice
+        }
+      };
+    },
+    AddedBefore: function (addedBefore) {
+      return {
+        added: {
+          $lt: addedBefore
+        }
+      };
+    }
   }
 });
 
@@ -65,8 +67,10 @@ We also provide a number of "filter factory functions" in the Filter Object so y
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice:    Filter.Gte('price'),
-  AddedBefore: Filter.Lt('added')
+  filters: {
+    MinPrice:    Filter.Gte('price'),
+    AddedBefore: Filter.Lt('added')
+  }
 });
 ```
 
@@ -96,8 +100,10 @@ var DateBetweenFilter = function DateBetweenFilterFactory(field) {
 };
 
 var ProductFilter = Filter.create({
-  MinPrice:     Filter.Gte('price'),
-  AddedBetween: DateBetweenFilter('added'),
+  filters: {
+    MinPrice:     Filter.Gte('price'),
+    AddedBetween: DateBetweenFilter('added'),
+  }
 });
 
 var filter = new ProductFilter();
@@ -130,17 +136,29 @@ var serialized = filter.save();
 
 ## Filter Class
 
-The spec passed to the constructor is a series of key/values, where the key is the name for this part of the filter, and the value is a filter function which converts a value into a Mongo query. Instead of the value being a function, it can also be an Object containing a "filter" item. These are equivalent:
+The spec passed to the constructor contains a series of key/values, where the key is the name for this part of the filter, and the value is a filter function which converts a value into a Mongo query. Instead of the value being a function, it can also be an Object containing a "filter" item. These are equivalent:
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: Filter.Gte('price')
+  filters: {
+    MinPrice: Filter.Gte('price')
+  }
 });
 
 var ProductFilter = Filter.create({
-  MinPrice: {
-    filter: Filter.Gte('price')
+  filters: {
+    MinPrice: {
+      filter: Filter.Gte('price')
+    }
   }
+});
+
+var ProductFilter = Filter.create({
+  filters: [
+    {
+      MinPrice: Filter.Gte('price')
+    }
+  ]
 });
 
 var ProductFilter = Filter.create([
@@ -150,18 +168,44 @@ var ProductFilter = Filter.create([
 ]);
 ```
 
-The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. The third version uses an Array. The only purpose of this is so we can recover the order that the filters were defined in when calling `ProductFilter.names()`.
+The first version is compact, but the second version allows us to store more things alongside the filter, such as arbitrary useful meta data. The third version uses an Array. The only purpose of this is so we can recover the order that the filters were defined in when calling `ProductFilter.names()`. The fourth version is a
+more compact version of the third. So why the third? In case we
+want to pass things other than `filters`, such as `type`:
+
+As well as passing `filters` to Filter.create, you can also pass
+an optional `type` parameter:
+
+```javascript
+var ProductFilter = Filter.create({
+  type: 'Foo',
+  filters: {
+    ...
+  }
+});
+```
+
+If you do this, then you can call the type function on the filter
+spec object, or any filters created from it, to get that type. This allows you to uniquely identify filter specs without having to pass
+names around:
+
+```javascript
+ProductFilter.type() === 'Foo'; // true
+var filter = new ProductFilter();
+filter.type() === 'Foo'; // true
+```
 
 Here we store some meta data information about a "template" that we might want to use to let the user select what min-price to filter on:
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: {
-    filter: Filter.Gte('price'),
-    meta: {
-      template: Template.minPriceFilterTemplate
+  filters: {
+    MinPrice: {
+      filter: Filter.Gte('price'),
+      meta: {
+        template: Template.minPriceFilterTemplate
+      }
     }
-  }
+  },
 });
 ```
 
@@ -191,10 +235,12 @@ function CustomFilter (field) {
 };
 
 var ProductFilter = Filter.create({
-  MinPrice: {
-    filter: CustomFilter('price'),
-    meta: {
-      bar: 789,
+  filters: {
+    MinPrice: {
+      filter: CustomFilter('price'),
+      meta: {
+        bar: 789,
+      }
     }
   }
 });
@@ -210,7 +256,9 @@ ProductFilter.meta('MinPrice') ==
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: CustomFilter('price')
+  filters: {
+    MinPrice: CustomFilter('price')
+  }
 });
 ProductFilter.meta('MinPrice', {
   bar: 789
@@ -221,8 +269,10 @@ To set multiple values at once:
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: CustomFilter('price'),
-  MaxPrice: SomeOtherFilter('price'),
+  filters: {
+    MinPrice: CustomFilter('price'),
+    MaxPrice: SomeOtherFilter('price'),
+  }
 });
 ProductFilter.meta({
   MinPrice: { bar: 789 },
@@ -236,12 +286,14 @@ example
 
 ```javascript
 var ProductFilter = Filter.create({
-  MinPrice: {
-    filter: CustomFilter('price'),
-    beforeSet: function (value, callback) {
-      var low = ProductFilter.meta('MinPrice').low;
-      if (value < low) {
-        callback(low);
+  filters: {
+    MinPrice: {
+      filter: CustomFilter('price'),
+      beforeSet: function (value, callback) {
+        var low = ProductFilter.meta('MinPrice').low;
+        if (value < low) {
+          callback(low);
+        }
       }
     }
   }

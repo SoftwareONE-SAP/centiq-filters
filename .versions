@@ -1,5 +1,5 @@
 base64@1.0.7
-centiq:filters@1.0.3
+centiq:filters@1.0.4
 ejson@1.0.10
 meteor@1.1.13
 tracker@1.0.12

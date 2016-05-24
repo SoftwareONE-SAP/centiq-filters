@@ -6,6 +6,16 @@ Filter = typeof Filter === 'undefined' ? {} : Filter;
 
 Filter.create = function FilterCreateSpec(spec) {
 
+  /**
+   * Compact "{ type: T, filters: F }" to "F" whilst extracting the "type" item
+   */
+  var type = null;
+  if (!Array.isArray(spec)) {
+    type = spec.type || null;
+    spec = spec.filters;
+    if (!spec) throw "Missing filter definitions";
+  }
+
   var names = [];
   if (Array.isArray(spec)) {
     spec = spec.reduce(function(o, item){
@@ -71,6 +81,13 @@ Filter.create = function FilterCreateSpec(spec) {
       }.bind(this));
       this.set(set);
     }
+  };
+
+  /**
+   * Returns the "type" of filter if one was specified
+   */
+  filter.type = filter.prototype.type = function () {
+    return type;
   };
 
   /**

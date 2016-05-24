@@ -1,6 +1,6 @@
 Package.describe({
   name: 'centiq:filters',
-  version: '1.0.3',
+  version: '1.0.4',
   summary: 'Library for managing collection filtering',
   git: 'https://github.com/Centiq/centiq-filters',
   documentation: 'README.md'
