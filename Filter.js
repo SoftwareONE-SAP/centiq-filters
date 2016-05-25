@@ -206,7 +206,7 @@ Filter.create = function FilterCreateSpec(spec) {
    */
   filter.prototype.clear = function clear() {
 
-    var set = arguments[0];
+    var set = arguments[0]||{};
     if (arguments.length > 1) {
       set = {};
       set[arguments[0]] = arguments[1];
@@ -219,6 +219,11 @@ Filter.create = function FilterCreateSpec(spec) {
       } else {
         this.unset(k);
       }
+    }.bind(this));
+
+    Object.keys(set).forEach(function(k){
+      if (this._data.hasOwnProperty(k)) return;
+      this.set(k, set[k]);
     }.bind(this));
 
     this._continueTracking();
