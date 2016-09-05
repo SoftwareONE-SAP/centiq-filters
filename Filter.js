@@ -156,14 +156,14 @@ Filter.create = function FilterCreateSpec(spec) {
     var to   = EJSON.clone(this._reset);
     if (set) {
       Object.keys(set).forEach(function(k){
-        to[k] = EJSON.clone(set[k]);
+        to[k] = { value: EJSON.clone(set[k]) };
       });
     }
 
     this._pauseTracking();
 
     Object.keys(to).forEach(function(k){
-      this.set(k, to[k]);
+      this.set(k, to[k].value);
     }.bind(this));
 
     Object.keys(from).forEach(function(k){
@@ -362,12 +362,15 @@ Filter.create = function FilterCreateSpec(spec) {
       set = {};
       set[arguments[0]] = arguments[1];
     }
+    if (!set) set = {};
 
-    var f = new filter(this.save())
+    var cur = this.save();
+    Object.keys(cur).forEach(function(k){
+      if (!set.hasOwnProperty(k)) set[k] = cur[k];
+    });
 
-    if (set) {
-      f.set(set);
-    }
+    var f = new filter(set);
+    f._reset = this._reset;
 
     return f;
   };
