@@ -293,7 +293,7 @@ Filter.And = function AndFactory(filters) {
  */
 Filter.Not = function NotFactory(func) {
   if (arguments.length !== 1 || typeof func !== 'function') {
-    throw new Error('Eq takes a single Function argument');
+    throw new Error('Not takes a single Function argument');
   }
   return function Not(value) {
     var selector = func(value);
